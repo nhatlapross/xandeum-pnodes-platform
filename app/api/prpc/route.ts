@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import http from "http";
+import https from "https";
 
 async function makeHttpRequest(
   url: string,
@@ -9,10 +10,12 @@ async function makeHttpRequest(
     try {
       const urlObj = new URL(url);
       const postData = JSON.stringify(data);
+      const isHttps = urlObj.protocol === "https:";
+      const httpModule = isHttps ? https : http;
 
       const options = {
         hostname: urlObj.hostname,
-        port: urlObj.port || 80,
+        port: urlObj.port || (isHttps ? 443 : 80),
         path: urlObj.pathname,
         method: "POST",
         headers: {
@@ -22,7 +25,7 @@ async function makeHttpRequest(
         timeout: 10000,
       };
 
-      const req = http.request(options, (res) => {
+      const req = httpModule.request(options, (res) => {
         let responseData = "";
 
         res.on("data", (chunk) => {
