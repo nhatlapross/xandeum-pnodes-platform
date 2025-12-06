@@ -197,8 +197,8 @@ export default function Home() {
     setNodes(initialNodes);
   }, []);
 
-  // Fetch detailed data for a single node
-  const fetchNodeData = useCallback(async (pod: NetworkPod, index: number): Promise<NodeData> => {
+  // Fetch detailed data for a single node and update state immediately
+  const fetchNodeDataAndUpdate = useCallback(async (pod: NetworkPod, index: number) => {
     const ip = pod.address.split(":")[0];
     const nodeData: NodeData = {
       ip,
@@ -216,39 +216,44 @@ export default function Home() {
       callApi(ip, "get-pods"),
     ]);
 
+    let result: NodeData;
     if (versionRes.error && statsRes.error && podsRes.error) {
-      return {
+      result = {
         ...nodeData,
         status: "offline",
         error: versionRes.error || statsRes.error || podsRes.error,
       };
+    } else {
+      result = {
+        ...nodeData,
+        status: "online",
+        version: versionRes.result as VersionResponse | undefined,
+        stats: statsRes.result as StatsResponse | undefined,
+        pods: podsRes.result as PodsResponse | undefined,
+        lastFetched: Date.now(),
+      };
     }
 
-    return {
-      ...nodeData,
-      status: "online",
-      version: versionRes.result as VersionResponse | undefined,
-      stats: statsRes.result as StatsResponse | undefined,
-      pods: podsRes.result as PodsResponse | undefined,
-      lastFetched: Date.now(),
-    };
+    // Update single node in state immediately (lazy load)
+    setNodes(prev => prev.map(n => n.address === pod.address ? result : n));
+    return result;
   }, []);
 
-  // Fetch all nodes data from registry pods
+  // Fetch all nodes data from registry pods (lazy load - update each as it completes)
   const fetchAllNodesData = useCallback(async () => {
     if (registryPods.length === 0) return;
 
     setIsLoading(true);
 
-    // Fetch all nodes in parallel
-    const results = await Promise.all(
-      registryPods.map((pod, idx) => fetchNodeData(pod, idx))
-    );
+    // Start all fetches in parallel, each updates state when complete
+    const promises = registryPods.map((pod, idx) => fetchNodeDataAndUpdate(pod, idx));
 
-    setNodes(results);
+    // Wait for all to complete
+    await Promise.all(promises);
+
     setLastUpdate(new Date());
     setIsLoading(false);
-  }, [registryPods, fetchNodeData]);
+  }, [registryPods, fetchNodeDataAndUpdate]);
 
   // Handle network change
   const handleNetworkChange = useCallback((networkId: string) => {
@@ -298,6 +303,19 @@ export default function Home() {
           0
         ) / onlineNodes.length
       : 0;
+
+  // Calculate sync stats
+  const maxSyncIndex = onlineNodes.length > 0
+    ? Math.max(...onlineNodes.map((n) => n.stats?.current_index || 0))
+    : 0;
+  const totalDataSynced = onlineNodes.reduce(
+    (acc, n) => acc + (n.stats?.total_bytes || 0),
+    0
+  );
+  const totalActiveStreams = onlineNodes.reduce(
+    (acc, n) => acc + (n.stats?.active_streams || 0),
+    0
+  );
 
   const selectedNodeData = selectedNode
     ? nodes.find((n) => n.address === selectedNode)
@@ -357,7 +375,11 @@ export default function Home() {
                 disabled={isLoading || registryStatus === "loading"}
                 className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
               >
-                {isLoading || registryStatus === "loading" ? "Refreshing..." : "Refresh All"}
+                {registryStatus === "loading"
+                  ? "Loading pods..."
+                  : isLoading
+                  ? `Loading ${nodes.filter(n => n.status !== "loading").length}/${nodes.length}...`
+                  : "Refresh All"}
               </button>
             </div>
           </div>
@@ -463,6 +485,70 @@ export default function Home() {
                   <div className="text-sm text-zinc-400">With Pubkey</div>
                 </div>
               </div>
+
+              {/* Sync Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                <div className="bg-zinc-900 rounded-lg p-4 border border-cyan-800/50">
+                  <div className="text-3xl font-bold text-cyan-400 font-mono">
+                    #{maxSyncIndex}
+                  </div>
+                  <div className="text-sm text-zinc-400">Latest Sync Index</div>
+                </div>
+                <div className="bg-zinc-900 rounded-lg p-4 border border-zinc-800">
+                  <div className="text-3xl font-bold text-white">
+                    {formatBytes(totalDataSynced)}
+                  </div>
+                  <div className="text-sm text-zinc-400">Total Data Synced</div>
+                </div>
+                <div className="bg-zinc-900 rounded-lg p-4 border border-zinc-800">
+                  <div className="text-3xl font-bold text-white">
+                    {totalActiveStreams}
+                  </div>
+                  <div className="text-sm text-zinc-400">Active Streams</div>
+                </div>
+                <div className="bg-zinc-900 rounded-lg p-4 border border-zinc-800">
+                  <div className="text-3xl font-bold text-white">
+                    {onlineNodes.reduce((acc, n) => acc + (n.stats?.total_pages || 0), 0).toLocaleString()}
+                  </div>
+                  <div className="text-sm text-zinc-400">Total Pages</div>
+                </div>
+              </div>
+
+              {/* Network Traffic */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                <div className="bg-zinc-900 rounded-lg p-4 border border-green-800/50">
+                  <div className="text-3xl font-bold text-green-400">
+                    {onlineNodes.reduce((acc, n) => acc + (n.stats?.packets_received || 0), 0).toLocaleString()}
+                  </div>
+                  <div className="text-sm text-zinc-400">Packets/s (In)</div>
+                </div>
+                <div className="bg-zinc-900 rounded-lg p-4 border border-blue-800/50">
+                  <div className="text-3xl font-bold text-blue-400">
+                    {onlineNodes.reduce((acc, n) => acc + (n.stats?.packets_sent || 0), 0).toLocaleString()}
+                  </div>
+                  <div className="text-sm text-zinc-400">Packets/s (Out)</div>
+                </div>
+                <div className="bg-zinc-900 rounded-lg p-4 border border-zinc-800">
+                  <div className="text-3xl font-bold text-white">
+                    {onlineNodes.length > 0
+                      ? formatUptime(Math.max(...onlineNodes.map((n) => n.stats?.uptime || 0)))
+                      : "-"}
+                  </div>
+                  <div className="text-sm text-zinc-400">Max Uptime</div>
+                </div>
+                <div className="bg-zinc-900 rounded-lg p-4 border border-zinc-800">
+                  <div className="text-3xl font-bold text-white">
+                    {onlineNodes.length > 0
+                      ? formatUptime(
+                          Math.round(
+                            onlineNodes.reduce((acc, n) => acc + (n.stats?.uptime || 0), 0) / onlineNodes.length
+                          )
+                        )
+                      : "-"}
+                  </div>
+                  <div className="text-sm text-zinc-400">Avg Uptime</div>
+                </div>
+              </div>
             </section>
 
             {/* Node Grid */}
@@ -548,6 +634,22 @@ export default function Home() {
                           </div>
                         </div>
 
+                        {/* Sync Info */}
+                        <div className="mt-3 pt-3 border-t border-zinc-800">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-xs text-zinc-500">Sync Index</span>
+                            <span className="text-sm font-mono text-cyan-400">
+                              #{node.stats.current_index}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs text-zinc-500">Data Synced</span>
+                            <span className="text-sm text-zinc-300">
+                              {formatBytes(node.stats.total_bytes)}
+                            </span>
+                          </div>
+                        </div>
+
                         {/* Quick Stats */}
                         <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-zinc-800">
                           <div>
@@ -565,14 +667,33 @@ export default function Home() {
                           <div>
                             <div className="text-xs text-zinc-500">Packets In</div>
                             <div className="text-sm text-zinc-300">
-                              {node.stats.packets_received}/s
+                              {node.stats.packets_received.toLocaleString()}/s
                             </div>
                           </div>
                           <div>
                             <div className="text-xs text-zinc-500">Packets Out</div>
                             <div className="text-sm text-zinc-300">
-                              {node.stats.packets_sent}/s
+                              {node.stats.packets_sent.toLocaleString()}/s
                             </div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-zinc-500">Active Streams</div>
+                            <div className="text-sm text-zinc-300">
+                              {node.stats.active_streams}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-zinc-500">Total Pages</div>
+                            <div className="text-sm text-zinc-300">
+                              {node.stats.total_pages.toLocaleString()}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Last Updated */}
+                        <div className="mt-2 pt-2 border-t border-zinc-800">
+                          <div className="text-xs text-zinc-500">
+                            Last Updated: {formatTimestamp(node.stats.last_updated)}
                           </div>
                         </div>
                       </div>
@@ -787,12 +908,16 @@ export default function Home() {
                       <th className="text-left p-3 font-medium text-zinc-400">#</th>
                       <th className="text-left p-3 font-medium text-zinc-400">Node</th>
                       <th className="text-left p-3 font-medium text-zinc-400">Status</th>
+                      <th className="text-left p-3 font-medium text-zinc-400">Sync Index</th>
+                      <th className="text-left p-3 font-medium text-zinc-400">Data Synced</th>
                       <th className="text-left p-3 font-medium text-zinc-400">Version</th>
                       <th className="text-left p-3 font-medium text-zinc-400">CPU</th>
                       <th className="text-left p-3 font-medium text-zinc-400">RAM</th>
                       <th className="text-left p-3 font-medium text-zinc-400">Storage</th>
-                      <th className="text-left p-3 font-medium text-zinc-400">Uptime</th>
+                      <th className="text-left p-3 font-medium text-zinc-400">Packets In/Out</th>
                       <th className="text-left p-3 font-medium text-zinc-400">Streams</th>
+                      <th className="text-left p-3 font-medium text-zinc-400">Uptime</th>
+                      <th className="text-left p-3 font-medium text-zinc-400">Last Updated</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-800">
@@ -812,6 +937,11 @@ export default function Home() {
                           <div className="text-xs text-zinc-500 font-mono">
                             {node.address}
                           </div>
+                          {node.pubkey && (
+                            <div className="text-xs text-zinc-600 font-mono truncate max-w-[150px]" title={node.pubkey}>
+                              {node.pubkey}
+                            </div>
+                          )}
                         </td>
                         <td className="p-3">
                           <span
@@ -835,6 +965,14 @@ export default function Home() {
                             {node.status}
                           </span>
                         </td>
+                        <td className="p-3">
+                          <span className="font-mono text-cyan-400">
+                            {node.stats?.current_index !== undefined ? `#${node.stats.current_index}` : "-"}
+                          </span>
+                        </td>
+                        <td className="p-3 text-zinc-300">
+                          {node.stats ? formatBytes(node.stats.total_bytes) : "-"}
+                        </td>
                         <td className="p-3 text-zinc-300">
                           {node.version?.version || node.registryVersion || "-"}
                         </td>
@@ -849,11 +987,23 @@ export default function Home() {
                         <td className="p-3 text-zinc-300">
                           {node.stats ? formatBytes(node.stats.file_size) : "-"}
                         </td>
-                        <td className="p-3 text-zinc-300">
-                          {node.stats ? formatUptime(node.stats.uptime) : "-"}
+                        <td className="p-3 text-zinc-300 text-xs">
+                          {node.stats ? (
+                            <span>
+                              <span className="text-green-400">{node.stats.packets_received.toLocaleString()}</span>
+                              {" / "}
+                              <span className="text-blue-400">{node.stats.packets_sent.toLocaleString()}</span>
+                            </span>
+                          ) : "-"}
                         </td>
                         <td className="p-3 text-zinc-300">
                           {node.stats?.active_streams ?? "-"}
+                        </td>
+                        <td className="p-3 text-zinc-300">
+                          {node.stats ? formatUptime(node.stats.uptime) : "-"}
+                        </td>
+                        <td className="p-3 text-zinc-400 text-xs">
+                          {node.stats ? formatTimestamp(node.stats.last_updated) : "-"}
                         </td>
                       </tr>
                     ))}
