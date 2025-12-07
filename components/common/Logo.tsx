@@ -18,20 +18,19 @@ export function Logo({ height = 32, className }: LogoProps) {
   useEffect(() => {
     // Check initial state
     const checkDark = () => {
-      setIsDark(document.documentElement.classList.contains('dark'))
+      const dark = document.documentElement.classList.contains('dark')
+      setIsDark(dark)
     }
     checkDark()
 
-    // Watch for changes
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'class') {
-          checkDark()
-        }
-      })
+    // Watch for changes with immediate update
+    const observer = new MutationObserver(() => {
+      const dark = document.documentElement.classList.contains('dark')
+      // Use queueMicrotask for immediate update
+      queueMicrotask(() => setIsDark(dark))
     })
 
-    observer.observe(document.documentElement, { attributes: true })
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
     return () => observer.disconnect()
   }, [])
 
@@ -41,7 +40,8 @@ export function Logo({ height = 32, className }: LogoProps) {
       alt="Xnode"
       width={width}
       height={height}
-      className={cn('shrink-0', className)}
+      priority
+      className={cn('shrink-0 transition-opacity duration-150', className)}
     />
   )
 }
@@ -52,19 +52,17 @@ export function LogoIcon({ size = 32, className }: { size?: number; className?: 
 
   useEffect(() => {
     const checkDark = () => {
-      setIsDark(document.documentElement.classList.contains('dark'))
+      const dark = document.documentElement.classList.contains('dark')
+      setIsDark(dark)
     }
     checkDark()
 
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'class') {
-          checkDark()
-        }
-      })
+    const observer = new MutationObserver(() => {
+      const dark = document.documentElement.classList.contains('dark')
+      queueMicrotask(() => setIsDark(dark))
     })
 
-    observer.observe(document.documentElement, { attributes: true })
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
     return () => observer.disconnect()
   }, [])
 
@@ -74,7 +72,8 @@ export function LogoIcon({ size = 32, className }: { size?: number; className?: 
       alt="Xnode"
       width={size}
       height={size}
-      className={cn('shrink-0', className)}
+      priority
+      className={cn('shrink-0 transition-opacity duration-150', className)}
     />
   )
 }

@@ -81,7 +81,7 @@ export function NodeCard({ node, isSelected, onClick, formatBytes, formatUptime 
                 ? "bg-success"
                 : node.status === "offline"
                 ? "bg-destructive"
-                : "bg-primary animate-pulse"
+                : "bg-[#F59E0B] animate-pulse"
             )}
           />
         </div>

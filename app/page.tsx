@@ -461,7 +461,7 @@ export default function Home() {
           <span
             className={cn(
               "w-2 h-2",
-              network.type === "mainnet" ? "bg-success" : "bg-primary"
+              network.type === "mainnet" ? "bg-success" : "bg-[#F59E0B]"
             )}
           />
           {network.name}
@@ -710,7 +710,7 @@ export default function Home() {
                                 ? "bg-success"
                                 : node.status === "offline"
                                 ? "bg-destructive"
-                                : "bg-primary"
+                                : "bg-[#F59E0B]"
                             )}
                           />
                           {node.status}

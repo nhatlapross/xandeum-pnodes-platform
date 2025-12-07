@@ -84,7 +84,7 @@ export function NetworkStats({
                 <Activity className="w-4 h-4 text-primary" />
                 <span className="text-xs uppercase tracking-widest text-muted-foreground">Avg RAM</span>
               </div>
-              <p className="text-3xl font-light font-mono text-success">{avgRamPercent.toFixed(1)}%</p>
+              <p className="text-3xl font-light font-mono text-primary">{avgRamPercent.toFixed(1)}%</p>
               <DotProgress percent={avgRamPercent} className="mt-2" />
             </BracketCard>
           </ScaleOnHover>
