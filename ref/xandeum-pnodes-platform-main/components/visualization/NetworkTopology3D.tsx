@@ -111,7 +111,7 @@ interface NetworkTopology3DProps {
   onNodeClick?: (node: NodeData) => void;
 }
 
-export function NetworkTopology3D({ nodes, onNodeClick }: NetworkTopology3DProps) {
+export default function NetworkTopology3D({ nodes, onNodeClick }: NetworkTopology3DProps) {
   const fgRef = useRef<any>();
   const containerRef = useRef<HTMLDivElement>(null);
   const [graphData, setGraphData] = useState<GraphData>({ nodes: [], links: [] });

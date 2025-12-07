@@ -61,21 +61,10 @@ async function makeHttpRequest(
 
 export async function POST(request: NextRequest) {
   try {
-    let body;
-    try {
-      body = await request.json();
-    } catch (e) {
-      console.error("Failed to parse request body:", e);
-      return NextResponse.json(
-        { error: "Invalid JSON body" },
-        { status: 400 }
-      );
-    }
-
+    const body = await request.json();
     const { endpoint, method } = body;
 
     if (!endpoint || !method) {
-      console.error("Missing endpoint or method:", body);
       return NextResponse.json(
         { error: "Missing endpoint or method" },
         { status: 400 }
