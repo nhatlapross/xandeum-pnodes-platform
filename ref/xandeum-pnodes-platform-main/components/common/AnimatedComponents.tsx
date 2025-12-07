@@ -75,12 +75,10 @@ interface FadeInProps extends HTMLMotionProps<'div'> {
   duration?: number
   className?: string
   children: React.ReactNode
-  /** If true, animate immediately on mount instead of on scroll into view */
-  animateOnMount?: boolean
 }
 
 export const FadeIn = forwardRef<HTMLDivElement, FadeInProps>(
-  ({ direction = 'up', delay = 0, duration = 0.5, className, children, animateOnMount = false, ...props }, ref) => {
+  ({ direction = 'up', delay = 0, duration = 0.5, className, children, ...props }, ref) => {
     const variants: Record<string, Variants> = {
       up: fadeInUp,
       down: fadeInDown,
@@ -93,10 +91,8 @@ export const FadeIn = forwardRef<HTMLDivElement, FadeInProps>(
       <motion.div
         ref={ref}
         initial="hidden"
-        {...(animateOnMount
-          ? { animate: "visible" }
-          : { whileInView: "visible", viewport: { once: true, margin: '-50px' } }
-        )}
+        whileInView="visible"
+        viewport={{ once: true, margin: '-50px' }}
         variants={variants[direction]}
         transition={{ duration, delay, ease: 'easeOut' }}
         className={cn(className)}
@@ -118,8 +114,6 @@ interface StaggerProps extends HTMLMotionProps<'div'> {
   initialDelay?: number
   className?: string
   children: React.ReactNode
-  /** If true, animate immediately on mount instead of on scroll into view */
-  animateOnMount?: boolean
 }
 
 export function Stagger({
@@ -127,16 +121,13 @@ export function Stagger({
   initialDelay = 0,
   className,
   children,
-  animateOnMount = false,
   ...props
 }: StaggerProps) {
   return (
     <motion.div
       initial="hidden"
-      {...(animateOnMount
-        ? { animate: "visible" }
-        : { whileInView: "visible", viewport: { once: true, margin: '-50px' } }
-      )}
+      whileInView="visible"
+      viewport={{ once: true, margin: '-50px' }}
       variants={{
         hidden: { opacity: 0 },
         visible: {

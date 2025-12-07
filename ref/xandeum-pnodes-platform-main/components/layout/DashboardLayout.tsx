@@ -36,18 +36,32 @@ export function DashboardLayout({
 }: DashboardLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [isDark, setIsDark] = useState(false)
-  const [mounted, setMounted] = useState(false)
+  const [isDark, setIsDark] = useState(() => {
+    // Check if we're on the client and get initial state
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('theme')
+      if (stored) return stored === 'dark'
+      return document.documentElement.classList.contains('dark')
+    }
+    return false
+  })
 
-  // Initialize dark mode after mount to avoid hydration mismatch
+  // Initialize dark mode from system preference (sync external state)
   useEffect(() => {
-    setMounted(true)
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
     const stored = localStorage.getItem('theme')
     const shouldBeDark = stored ? stored === 'dark' : prefersDark
+    const currentIsDark = document.documentElement.classList.contains('dark')
 
-    document.documentElement.classList.toggle('dark', shouldBeDark)
-    setIsDark(shouldBeDark)
+    // Only update DOM if needed
+    if (shouldBeDark !== currentIsDark) {
+      document.documentElement.classList.toggle('dark', shouldBeDark)
+    }
+
+    // Update state via microtask to avoid synchronous setState warning
+    if (shouldBeDark !== isDark) {
+      queueMicrotask(() => setIsDark(shouldBeDark))
+    }
   }, [])
 
   const toggleDarkMode = () => {
@@ -174,7 +188,7 @@ export function DashboardLayout({
             <div className="flex items-center gap-2">
               {headerRight}
 
-              {showThemeToggle && mounted && (
+              {showThemeToggle && (
                 <Button variant="ghost" size="icon-sm" onClick={toggleDarkMode}>
                   {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                 </Button>
@@ -195,7 +209,7 @@ export function DashboardLayout({
 // Simple page header component for consistency
 interface PageHeaderProps {
   title: string
-  description?: React.ReactNode
+  description?: string
   actions?: React.ReactNode
   className?: string
 }
