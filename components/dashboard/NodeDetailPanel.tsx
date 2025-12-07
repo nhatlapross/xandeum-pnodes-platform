@@ -27,7 +27,7 @@ interface VersionResponse {
 interface Pod {
   address: string
   version: string
-  last_seen: string
+  last_seen?: string
   last_seen_timestamp: number
   pubkey?: string | null
 }
@@ -183,7 +183,9 @@ export function NodeDetailPanel({
                           </div>
                           <div className="text-right">
                             <div className="text-xs text-muted-foreground">Last seen</div>
-                            <div className="text-xs font-mono">{pod.last_seen}</div>
+                            <div className="text-xs font-mono">
+                              {pod.last_seen || formatTimestamp(pod.last_seen_timestamp)}
+                            </div>
                           </div>
                         </div>
                       ))}
