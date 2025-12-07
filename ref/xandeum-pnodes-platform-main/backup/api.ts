@@ -61,21 +61,10 @@ async function makeHttpRequest(
 
 export async function POST(request: NextRequest) {
   try {
-    let body;
-    try {
-      body = await request.json();
-    } catch (e) {
-      console.error("Failed to parse request body:", e);
-      return NextResponse.json(
-        { error: "Invalid JSON body" },
-        { status: 400 }
-      );
-    }
-
+    const body = await request.json();
     const { endpoint, method } = body;
 
     if (!endpoint || !method) {
-      console.error("Missing endpoint or method:", body);
       return NextResponse.json(
         { error: "Missing endpoint or method" },
         { status: 400 }
@@ -91,8 +80,7 @@ export async function POST(request: NextRequest) {
     const result = await makeHttpRequest(endpoint, payload);
 
     if (result.error) {
-      // Return 200 with error in body - the node being offline is not a server error
-      return NextResponse.json({ error: result.error });
+      return NextResponse.json({ error: result.error }, { status: 500 });
     }
 
     return NextResponse.json(result.data);
