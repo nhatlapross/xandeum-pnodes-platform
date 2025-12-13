@@ -103,6 +103,17 @@ interface NetworkPodsResponse {
   total_count: number;
 }
 
+// Pod Credits API types
+interface PodCredit {
+  pod_id: string;
+  credits: number;
+}
+
+interface PodCreditsResponse {
+  pods_credits: PodCredit[];
+  status: string;
+}
+
 // Utility functions
 function formatBytes(bytes: number): string {
   if (bytes === 0) return "0 B";
@@ -164,6 +175,10 @@ export default function Home() {
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
+  // Pod Credits data
+  const [podCredits, setPodCredits] = useState<Map<string, number>>(new Map());
+  const [podCreditsLoading, setPodCreditsLoading] = useState(false);
+
   // View and filter state
   const [viewMode, setViewMode] = useState<"card" | "table">("card");
   const [statusFilter, setStatusFilter] = useState<"all" | "online" | "offline">("all");
@@ -171,7 +186,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Sort state
-  type SortColumn = "label" | "location" | "status" | "version" | "cpu" | "ram" | "storage" | "uptime" | "streams";
+  type SortColumn = "label" | "location" | "status" | "version" | "cpu" | "ram" | "storage" | "uptime" | "streams" | "credits";
   const [sortColumn, setSortColumn] = useState<SortColumn | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
@@ -282,6 +297,32 @@ export default function Home() {
       return { error: e instanceof Error ? e.message : "Unknown error" };
     }
   };
+
+  // Fetch Pod Credits via local API proxy
+  const fetchPodCredits = useCallback(async () => {
+    setPodCreditsLoading(true);
+    try {
+      const response = await fetch("/api/pod-credits");
+      if (!response.ok) {
+        console.error('[PodCredits] Failed to fetch:', response.status);
+        return;
+      }
+
+      const data: PodCreditsResponse = await response.json();
+      if (data.status === "success" && data.pods_credits) {
+        const creditsMap = new Map<string, number>();
+        data.pods_credits.forEach(pc => {
+          creditsMap.set(pc.pod_id, pc.credits);
+        });
+        setPodCredits(creditsMap);
+        console.log('[PodCredits] Loaded credits for', creditsMap.size, 'pods');
+      }
+    } catch (e) {
+      console.error('[PodCredits] Error:', e);
+    } finally {
+      setPodCreditsLoading(false);
+    }
+  }, []);
 
   // Fetch pods from selected network registry
   const fetchRegistryPods = useCallback(async (networkId: string) => {
@@ -437,6 +478,7 @@ export default function Home() {
   // Initial fetch on mount
   useEffect(() => {
     fetchRegistryPods(selectedNetwork);
+    fetchPodCredits(); // Fetch pod credits
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -457,6 +499,14 @@ export default function Home() {
     (acc, n) => acc + (n.stats?.file_size || 0),
     0
   );
+
+  // Calculate total credits for all nodes
+  const totalCredits = nodes.reduce((acc, n) => {
+    if (n.pubkey) {
+      return acc + (podCredits.get(n.pubkey) || 0);
+    }
+    return acc;
+  }, 0);
   const avgCpu =
     onlineNodes.length > 0
       ? onlineNodes.reduce((acc, n) => acc + (n.stats?.cpu_percent || 0), 0) /
@@ -571,6 +621,10 @@ export default function Home() {
           return direction * ((a.stats?.uptime || 0) - (b.stats?.uptime || 0));
         case "streams":
           return direction * ((a.stats?.active_streams || 0) - (b.stats?.active_streams || 0));
+        case "credits":
+          const aCredits = a.pubkey ? (podCredits.get(a.pubkey) || 0) : 0;
+          const bCredits = b.pubkey ? (podCredits.get(b.pubkey) || 0) : 0;
+          return direction * (aCredits - bCredits);
         default:
           return 0;
       }
@@ -744,6 +798,7 @@ export default function Home() {
               avgRamPercent={avgRamPercent}
               registryPods={registryPods}
               formatBytes={formatBytes}
+              totalCredits={totalCredits}
             />
           </ContentSection>
 
@@ -788,6 +843,7 @@ export default function Home() {
                       onClick={() => setSelectedNode(selectedNode === node.address ? null : node.address)}
                       formatBytes={formatBytes}
                       formatUptime={formatUptime}
+                      credits={node.pubkey ? podCredits.get(node.pubkey) : undefined}
                     />
                   </ScaleOnHover>
                 </StaggerItem>
@@ -883,6 +939,15 @@ export default function Home() {
                         <SortIcon column="streams" />
                       </div>
                     </th>
+                    <th
+                      className="text-left p-3 font-medium text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none"
+                      onClick={() => handleSort("credits")}
+                    >
+                      <div className="flex items-center gap-1">
+                        Credits
+                        <SortIcon column="credits" />
+                      </div>
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -953,6 +1018,15 @@ export default function Home() {
                       <td className="p-3 font-mono">{node.stats ? formatBytes(node.stats.file_size) : "-"}</td>
                       <td className="p-3 font-mono">{node.stats ? formatUptime(node.stats.uptime) : "-"}</td>
                       <td className="p-3 font-mono">{node.stats?.active_streams ?? "-"}</td>
+                      <td className="p-3 font-mono">
+                        {node.pubkey && podCredits.get(node.pubkey) !== undefined ? (
+                          <span className="text-success font-medium">
+                            {podCredits.get(node.pubkey)?.toLocaleString()}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">-</span>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -967,6 +1041,7 @@ export default function Home() {
             formatBytes={formatBytes}
             formatUptime={formatUptime}
             formatTimestamp={formatTimestamp}
+            credits={selectedNodeData?.pubkey ? podCredits.get(selectedNodeData.pubkey) : undefined}
           />
         </>
       )}

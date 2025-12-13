@@ -1,6 +1,6 @@
 'use client'
 
-import { X } from "lucide-react"
+import { X, Coins } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { BracketCard } from "@/components/common"
@@ -57,6 +57,7 @@ interface NodeDetailPanelProps {
   formatBytes: (bytes: number) => string
   formatUptime: (seconds: number) => string
   formatTimestamp: (timestamp: number) => string
+  credits?: number
 }
 
 export function NodeDetailPanel({
@@ -64,7 +65,8 @@ export function NodeDetailPanel({
   onClose,
   formatBytes,
   formatUptime,
-  formatTimestamp
+  formatTimestamp,
+  credits
 }: NodeDetailPanelProps) {
   if (!node || node.status !== "online") return null
 
@@ -154,6 +156,14 @@ export function NodeDetailPanel({
                     <div className="bg-card p-4">
                       <div className="text-xs text-muted-foreground uppercase tracking-wider">Version</div>
                       <div className="text-2xl font-mono mt-1">{node.version?.version || "N/A"}</div>
+                    </div>
+                    <div className="bg-card p-4">
+                      <div className="text-xs text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+                        <Coins className="w-3 h-3" /> Reputation Credits
+                      </div>
+                      <div className="text-2xl font-mono mt-1 text-success">
+                        {credits !== undefined && credits > 0 ? credits.toLocaleString() : "0"}
+                      </div>
                     </div>
                   </>
                 )}
