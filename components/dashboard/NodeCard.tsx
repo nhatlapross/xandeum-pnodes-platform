@@ -1,6 +1,6 @@
 'use client'
 
-import { Clock, HardDrive, Zap } from "lucide-react"
+import { Clock, HardDrive, Zap, Coins } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { DotProgress } from "@/components/common"
@@ -49,9 +49,10 @@ interface NodeCardProps {
   onClick: () => void
   formatBytes: (bytes: number) => string
   formatUptime: (seconds: number) => string
+  credits?: number
 }
 
-export function NodeCard({ node, isSelected, onClick, formatBytes, formatUptime }: NodeCardProps) {
+export function NodeCard({ node, isSelected, onClick, formatBytes, formatUptime, credits }: NodeCardProps) {
   return (
     <div
       onClick={onClick}
@@ -154,6 +155,19 @@ export function NodeCard({ node, isSelected, onClick, formatBytes, formatUptime 
               <div className="text-sm font-mono">{node.stats.packets_sent}/s</div>
             </div>
           </div>
+
+          {/* Credits */}
+          {credits !== undefined && credits > 0 && (
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Coins className="w-3.5 h-3.5 text-success" />
+                <span>Reputation Credits</span>
+              </div>
+              <div className="text-sm font-mono font-medium text-success">
+                {credits.toLocaleString()}
+              </div>
+            </div>
+          )}
         </div>
       ) : node.status === "offline" ? (
         <div className="text-sm text-destructive py-4 font-mono">

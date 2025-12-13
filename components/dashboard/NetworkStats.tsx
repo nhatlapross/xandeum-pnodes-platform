@@ -1,6 +1,6 @@
 'use client'
 
-import { Server, HardDrive, Cpu, Activity, Users } from "lucide-react"
+import { Server, HardDrive, Cpu, Activity, Users, Coins } from "lucide-react"
 import { BracketCard, DotProgress } from "@/components/common"
 import { Stagger, StaggerItem, ScaleOnHover } from "@/components/common"
 
@@ -19,6 +19,7 @@ interface NetworkStatsProps {
   avgRamPercent: number
   registryPods: NetworkPod[]
   formatBytes: (bytes: number) => string
+  totalCredits?: number
 }
 
 export function NetworkStats({
@@ -29,6 +30,7 @@ export function NetworkStats({
   avgRamPercent,
   registryPods,
   formatBytes,
+  totalCredits = 0,
 }: NetworkStatsProps) {
   return (
     <>
@@ -123,9 +125,12 @@ export function NetworkStats({
 
         <StaggerItem>
           <BracketCard className="p-4 bg-card">
-            <span className="text-xs uppercase tracking-widest text-muted-foreground">With Pubkey</span>
-            <p className="text-2xl font-light font-mono mt-1">
-              {registryPods.filter((p) => p.pubkey).length}
+            <div className="flex items-center gap-2 mb-2">
+              <Coins className="w-4 h-4 text-success" />
+              <span className="text-xs uppercase tracking-widest text-muted-foreground">Total Credits</span>
+            </div>
+            <p className="text-2xl font-light font-mono text-success">
+              {totalCredits.toLocaleString()}
             </p>
           </BracketCard>
         </StaggerItem>
