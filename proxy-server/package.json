@@ -5,9 +5,13 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "db:clear": "node scripts/clearDB.js all",
+    "db:clear:snapshots": "node scripts/clearDB.js snapshots",
+    "db:clear:history": "node scripts/clearDB.js history"
   },
   "dependencies": {
+    "abort-controller": "^3.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^4.18.2",

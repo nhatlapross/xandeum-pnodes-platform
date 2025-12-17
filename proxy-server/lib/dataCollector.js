@@ -1,5 +1,6 @@
 const cron = require('node-cron');
 const fetch = require('node-fetch');
+const AbortController = require('abort-controller');
 const { saveNetworkSnapshot, saveNodeHistory } = require('./mongodb');
 
 // RPC endpoints configuration
@@ -19,6 +20,24 @@ let latestData = {
 };
 
 /**
+ * Fetch with timeout using AbortController
+ */
+async function fetchWithTimeout(url, options = {}, timeoutMs = 10000) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    return response;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+/**
  * Fetch pods from RPC endpoint
  */
 async function fetchPods(network) {
@@ -26,7 +45,7 @@ async function fetchPods(network) {
   if (!rpcUrl) return null;
 
   try {
-    const response = await fetch(rpcUrl, {
+    const response = await fetchWithTimeout(rpcUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -37,8 +56,7 @@ async function fetchPods(network) {
         method: 'get-pods',
         id: 1,
       }),
-      timeout: 30000,
-    });
+    }, 30000);
 
     const data = await response.json();
     return data.result || null;
@@ -49,49 +67,79 @@ async function fetchPods(network) {
 }
 
 /**
+ * Make RPC call to a node with proper timeout
+ */
+async function makeRpcCall(endpoint, method, timeoutMs = 8000) {
+  try {
+    const response = await fetchWithTimeout(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', method, id: 1 }),
+    }, timeoutMs);
+
+    const data = await response.json();
+    return data.result || null;
+  } catch (error) {
+    // Silent fail for individual node calls
+    return null;
+  }
+}
+
+/**
  * Fetch node stats from individual node
+ * Note: Pods list contains gossip port (9001), but RPC is on port 6000
  */
 async function fetchNodeStats(address) {
-  const [ip, port = '6000'] = address.split(':');
-  const endpoint = `http://${ip}:${port}/rpc`;
+  // Address format is ip:port (e.g., "173.212.207.32:9001")
+  // But RPC endpoint is always on port 6000
+  const [ip] = address.split(':');
+  const endpoint = `http://${ip}:6000/rpc`;
 
   try {
-    const [versionRes, statsRes, podsRes] = await Promise.all([
-      fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jsonrpc: '2.0', method: 'get-version', id: 1 }),
-        timeout: 5000,
-      }).then(r => r.json()).catch(() => null),
-      fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jsonrpc: '2.0', method: 'get-stats', id: 1 }),
-        timeout: 5000,
-      }).then(r => r.json()).catch(() => null),
-      fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ jsonrpc: '2.0', method: 'get-pods', id: 1 }),
-        timeout: 5000,
-      }).then(r => r.json()).catch(() => null),
+    // Fetch all data in parallel with individual timeouts
+    const [versionResult, statsResult, podsResult] = await Promise.all([
+      makeRpcCall(endpoint, 'get-version', 8000),
+      makeRpcCall(endpoint, 'get-stats', 8000),
+      makeRpcCall(endpoint, 'get-pods', 8000),
     ]);
 
-    const isOnline = versionRes?.result || statsRes?.result;
+    // Determine if node is online based on any successful response
+    const isOnline = !!(versionResult || statsResult);
+
+    if (!isOnline) {
+      return { status: 'offline' };
+    }
+
+    // Extract version - can be string or object
+    let version = null;
+    if (versionResult) {
+      version = typeof versionResult === 'string' ? versionResult : versionResult.version;
+    }
+
+    // Calculate RAM percentage
+    let ramPercent = null;
+    if (statsResult && statsResult.ram_total > 0) {
+      ramPercent = (statsResult.ram_used / statsResult.ram_total) * 100;
+    }
 
     return {
-      status: isOnline ? 'online' : 'offline',
-      version: versionRes?.result?.version || null,
-      cpu: statsRes?.result?.cpu_percent || null,
-      ram: statsRes?.result ? (statsRes.result.ram_used / statsRes.result.ram_total) * 100 : null,
-      storage: statsRes?.result?.file_size || null,
-      uptime: statsRes?.result?.uptime || null,
-      activeStreams: statsRes?.result?.active_streams || null,
-      packetsReceived: statsRes?.result?.packets_received || null,
-      packetsSent: statsRes?.result?.packets_sent || null,
-      peersCount: podsRes?.result?.total_count || null,
+      status: 'online',
+      version: version,
+      cpu: statsResult?.cpu_percent ?? null,
+      ram: ramPercent,
+      ramUsed: statsResult?.ram_used ?? null,
+      ramTotal: statsResult?.ram_total ?? null,
+      storage: statsResult?.file_size ?? null,
+      uptime: statsResult?.uptime ?? null,
+      activeStreams: statsResult?.active_streams ?? null,
+      packetsReceived: statsResult?.packets_received ?? null,
+      packetsSent: statsResult?.packets_sent ?? null,
+      currentIndex: statsResult?.current_index ?? null,
+      totalPages: statsResult?.total_pages ?? null,
+      peersCount: podsResult?.total_count ?? null,
     };
   } catch (error) {
+    console.error(`[Collector] Error fetching ${address}:`, error.message);
     return { status: 'offline' };
   }
 }
@@ -111,9 +159,14 @@ async function collectNetworkData(network) {
   const pods = podsData.pods;
   const totalPods = podsData.total_count || pods.length;
 
-  // Sample nodes for detailed stats (limit to 20 for performance)
-  const sampleSize = Math.min(20, pods.length);
-  const sampledPods = pods.slice(0, sampleSize);
+  // Sort by last_seen_timestamp to get most active nodes first
+  const sortedPods = [...pods].sort((a, b) => b.last_seen_timestamp - a.last_seen_timestamp);
+
+  // Sample more nodes for better accuracy (limit to 30 for performance)
+  const sampleSize = Math.min(30, sortedPods.length);
+  const sampledPods = sortedPods.slice(0, sampleSize);
+
+  console.log(`[Collector] Sampling ${sampleSize} nodes from ${totalPods} total...`);
 
   // Fetch stats for sampled nodes in parallel (batch of 5)
   const nodeStats = [];
@@ -126,21 +179,47 @@ async function collectNetworkData(network) {
           address: pod.address,
           pubkey: pod.pubkey,
           network,
+          registryVersion: pod.version,
+          lastSeen: pod.last_seen_timestamp,
           ...stats,
         };
       })
     );
     nodeStats.push(...batchStats);
+
+    // Log progress
+    const onlineCount = nodeStats.filter(n => n.status === 'online').length;
+    console.log(`[Collector] Progress: ${nodeStats.length}/${sampleSize} sampled, ${onlineCount} online`);
   }
 
   // Calculate aggregated stats
   const onlineNodes = nodeStats.filter(n => n.status === 'online');
   const offlineNodes = nodeStats.filter(n => n.status === 'offline');
 
+  // Calculate version distribution from ALL pods (not just sampled)
+  const versionDistribution = pods.reduce((acc, pod) => {
+    if (pod.version) {
+      acc[pod.version] = (acc[pod.version] || 0) + 1;
+    }
+    return acc;
+  }, {});
+
+  // Estimate total online/offline based on sample ratio
+  const onlineRatio = nodeStats.length > 0 ? onlineNodes.length / nodeStats.length : 0;
+  const estimatedOnline = Math.round(totalPods * onlineRatio);
+  const estimatedOffline = totalPods - estimatedOnline;
+
   const aggregatedData = {
     totalPods,
+    // Use sampled counts for accuracy
+    sampledCount: nodeStats.length,
     onlineNodes: onlineNodes.length,
     offlineNodes: offlineNodes.length,
+    // Estimated totals based on sample ratio
+    estimatedOnline,
+    estimatedOffline,
+    onlineRatio: Math.round(onlineRatio * 100),
+    // Resource stats from online nodes
     totalStorage: onlineNodes.reduce((acc, n) => acc + (n.storage || 0), 0),
     avgCpu: onlineNodes.length > 0
       ? onlineNodes.reduce((acc, n) => acc + (n.cpu || 0), 0) / onlineNodes.length
@@ -150,12 +229,10 @@ async function collectNetworkData(network) {
       : 0,
     totalStreams: onlineNodes.reduce((acc, n) => acc + (n.activeStreams || 0), 0),
     totalBytesTransferred: onlineNodes.reduce((acc, n) => acc + (n.packetsReceived || 0) + (n.packetsSent || 0), 0),
-    versionDistribution: nodeStats.reduce((acc, n) => {
-      if (n.version) {
-        acc[n.version] = (acc[n.version] || 0) + 1;
-      }
-      return acc;
-    }, {}),
+    avgUptime: onlineNodes.length > 0
+      ? onlineNodes.reduce((acc, n) => acc + (n.uptime || 0), 0) / onlineNodes.length
+      : 0,
+    versionDistribution,
   };
 
   // Update in-memory cache
@@ -168,9 +245,9 @@ async function collectNetworkData(network) {
 
   // Save to MongoDB
   await saveNetworkSnapshot(network, aggregatedData);
-  await saveNodeHistory(nodeStats);
+  await saveNodeHistory(nodeStats.filter(n => n.status === 'online')); // Only save online nodes to history
 
-  console.log(`[Collector] ${network}: ${totalPods} pods, ${onlineNodes.length} online, ${offlineNodes.length} offline`);
+  console.log(`[Collector] ${network}: ${totalPods} pods, ${onlineNodes.length}/${nodeStats.length} sampled online (${aggregatedData.onlineRatio}%)`);
 
   return aggregatedData;
 }

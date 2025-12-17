@@ -119,12 +119,21 @@ async function saveNetworkSnapshot(network, data) {
   const snapshot = {
     network,
     timestamp: new Date(),
+    // Total from registry
     totalPods: data.totalPods || 0,
+    // Sampled stats
+    sampledCount: data.sampledCount || 0,
     onlineNodes: data.onlineNodes || 0,
     offlineNodes: data.offlineNodes || 0,
+    // Estimated totals based on sample ratio
+    estimatedOnline: data.estimatedOnline || 0,
+    estimatedOffline: data.estimatedOffline || 0,
+    onlineRatio: data.onlineRatio || 0,
+    // Resource stats from online nodes
     totalStorage: data.totalStorage || 0,
     avgCpu: data.avgCpu || 0,
     avgRam: data.avgRam || 0,
+    avgUptime: data.avgUptime || 0,
     totalStreams: data.totalStreams || 0,
     totalBytesTransferred: data.totalBytesTransferred || 0,
     versionDistribution: data.versionDistribution || {},
@@ -132,6 +141,7 @@ async function saveNetworkSnapshot(network, data) {
 
   try {
     const result = await db.collection(COLLECTIONS.NETWORK_SNAPSHOTS).insertOne(snapshot);
+    console.log(`[MongoDB] Saved snapshot for ${network}: ${data.onlineNodes}/${data.sampledCount} sampled online`);
     return result.insertedId;
   } catch (error) {
     console.error('[MongoDB] Save network snapshot error:', error.message);
@@ -153,8 +163,12 @@ async function saveNodeHistory(nodes) {
     timestamp,
     status: node.status,
     version: node.version,
+    registryVersion: node.registryVersion,
+    lastSeen: node.lastSeen,
     cpu: node.cpu,
     ram: node.ram,
+    ramUsed: node.ramUsed,
+    ramTotal: node.ramTotal,
     storage: node.storage,
     uptime: node.uptime,
     activeStreams: node.activeStreams,
@@ -165,6 +179,7 @@ async function saveNodeHistory(nodes) {
 
   try {
     const result = await db.collection(COLLECTIONS.NODE_HISTORY).insertMany(documents);
+    console.log(`[MongoDB] Saved ${result.insertedCount} node history records`);
     return result.insertedCount;
   } catch (error) {
     console.error('[MongoDB] Save node history error:', error.message);
@@ -220,11 +235,16 @@ async function getNetworkHistory(network, period = '24h', interval = '15m') {
             },
           },
           totalPods: { $avg: '$totalPods' },
+          sampledCount: { $avg: '$sampledCount' },
           onlineNodes: { $avg: '$onlineNodes' },
           offlineNodes: { $avg: '$offlineNodes' },
+          estimatedOnline: { $avg: '$estimatedOnline' },
+          estimatedOffline: { $avg: '$estimatedOffline' },
+          onlineRatio: { $avg: '$onlineRatio' },
           totalStorage: { $avg: '$totalStorage' },
           avgCpu: { $avg: '$avgCpu' },
           avgRam: { $avg: '$avgRam' },
+          avgUptime: { $avg: '$avgUptime' },
           totalStreams: { $avg: '$totalStreams' },
         },
       },
@@ -234,11 +254,16 @@ async function getNetworkHistory(network, period = '24h', interval = '15m') {
           _id: 0,
           timestamp: '$_id',
           totalPods: { $round: ['$totalPods', 0] },
+          sampledCount: { $round: ['$sampledCount', 0] },
           onlineNodes: { $round: ['$onlineNodes', 0] },
           offlineNodes: { $round: ['$offlineNodes', 0] },
+          estimatedOnline: { $round: ['$estimatedOnline', 0] },
+          estimatedOffline: { $round: ['$estimatedOffline', 0] },
+          onlineRatio: { $round: ['$onlineRatio', 0] },
           totalStorage: { $round: ['$totalStorage', 0] },
           avgCpu: { $round: ['$avgCpu', 2] },
           avgRam: { $round: ['$avgRam', 2] },
+          avgUptime: { $round: ['$avgUptime', 0] },
           totalStreams: { $round: ['$totalStreams', 0] },
         },
       },
