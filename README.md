@@ -201,7 +201,7 @@ HELIUS_API_KEY=your-api-key
 
 ```env
 PORT=3001
-MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net
+MONGODB_URI=your-mongo-url
 ALLOWED_ORIGINS=https://your-frontend.com
 COLLECTOR_SCHEDULE=*/5 * * * *
 ```
