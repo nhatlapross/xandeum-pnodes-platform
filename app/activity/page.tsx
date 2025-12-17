@@ -5,8 +5,6 @@ import {
   LayoutDashboard,
   Server,
   Activity,
-  Database,
-  Settings,
   RefreshCw,
   Network,
   TrendingUp,
@@ -78,13 +76,9 @@ const navSections: NavSection[] = [
   {
     title: "Network",
     items: [
-      { label: "Nodes", href: "/nodes", icon: Server },
+      { label: "Nodes", href: "/", icon: Server },
       { label: "Topology", href: "/topology", icon: Network },
-      { label: "Storage", href: "/storage", icon: Database },
     ],
-  },
-  {
-    items: [{ label: "Settings", href: "/settings", icon: Settings }],
   },
 ];
 

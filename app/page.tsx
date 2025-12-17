@@ -5,8 +5,6 @@ import {
   LayoutDashboard,
   Server,
   Activity,
-  Database,
-  Settings,
   RefreshCw,
   Globe,
   Network,
@@ -24,6 +22,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { batchGeolocate } from "@/lib/geolocation";
 import { getFromDB, setToDB, getAllFromDB, STORES, CACHE_TTL, cacheKeys } from "@/lib/indexedDB";
+import { PROXY_URL, USE_PROXY, proxyEndpoints } from "@/lib/proxyConfig";
 
 // Types based on pRPC API documentation
 interface VersionResponse {
@@ -149,14 +148,8 @@ const navSections: NavSection[] = [
   {
     title: "Network",
     items: [
-      { label: "Nodes", href: "/nodes", icon: Server },
+      { label: "Nodes", href: "/", icon: Server },
       { label: "Topology", href: "/topology", icon: Network },
-      { label: "Storage", href: "/storage", icon: Database },
-    ],
-  },
-  {
-    items: [
-      { label: "Settings", href: "/settings", icon: Settings },
     ],
   },
 ];
@@ -270,18 +263,41 @@ export default function Home() {
     }
   };
 
-  // Call RPC endpoint - try direct first (browser can pass Cloudflare), fallback to proxy
+  // Call RPC endpoint - use external proxy if configured, otherwise try direct/fallback
   const callRpcEndpoint = useCallback(async (
     rpcUrl: string,
     method: string
   ): Promise<{ result?: unknown; error?: string }> => {
+    // If external proxy is configured, use it (bypasses Cloudflare)
+    if (USE_PROXY && PROXY_URL) {
+      try {
+        const response = await fetch(proxyEndpoints.rpc(), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ endpoint: rpcUrl, method }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.result) {
+            return { result: data.result };
+          }
+          if (data.error) {
+            return { error: data.error };
+          }
+        }
+      } catch (e) {
+        // External proxy failed, continue to fallback
+      }
+    }
+
     const payload = {
       jsonrpc: "2.0",
       method: method,
       id: 1,
     };
 
-    // Try direct fetch from browser first (can bypass Cloudflare JS challenge)
+    // Try direct fetch from browser (can bypass Cloudflare JS challenge)
     try {
       const response = await fetch(rpcUrl, {
         method: "POST",
@@ -299,10 +315,10 @@ export default function Home() {
         }
       }
     } catch {
-      // Direct fetch failed (CORS or network error), try proxy
+      // Direct fetch failed (CORS or network error), try local proxy
     }
 
-    // Fallback to server proxy
+    // Fallback to local server proxy
     try {
       const response = await fetch("/api/prpc", {
         method: "POST",
