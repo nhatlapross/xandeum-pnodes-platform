@@ -186,7 +186,7 @@ export default function TopologyPage() {
   };
 
   // Call RPC endpoint - try direct first (browser can pass Cloudflare), fallback to proxy
-  const callRpcEndpoint = async (
+  const callRpcEndpoint = useCallback(async (
     rpcUrl: string,
     method: string
   ): Promise<{ result?: unknown; error?: string }> => {
@@ -236,7 +236,7 @@ export default function TopologyPage() {
     } catch (e) {
       return { error: e instanceof Error ? e.message : "Unknown error" };
     }
-  };
+  }, []);
 
   // Load cached node data for pods from IndexedDB
   const loadCachedNodes = useCallback(async (pods: NetworkPod[]): Promise<NodeData[]> => {

@@ -271,7 +271,7 @@ export default function Home() {
   };
 
   // Call RPC endpoint - try direct first (browser can pass Cloudflare), fallback to proxy
-  const callRpcEndpoint = async (
+  const callRpcEndpoint = useCallback(async (
     rpcUrl: string,
     method: string
   ): Promise<{ result?: unknown; error?: string }> => {
@@ -324,7 +324,7 @@ export default function Home() {
     } catch (e) {
       return { error: e instanceof Error ? e.message : "Unknown error" };
     }
-  };
+  }, []);
 
   // Fetch Pod Credits via local API proxy
   const fetchPodCredits = useCallback(async () => {
@@ -681,20 +681,18 @@ export default function Home() {
           continue;
         }
 
-        // Fetch and cache in background
+        // Fetch and cache in background - use callRpcEndpoint which tries direct first
         try {
-          const response = await fetch("/api/prpc", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ endpoint: network.rpcUrl, method: "get-pods" }),
-          });
-          const res = await response.json();
+          const res = await callRpcEndpoint(network.rpcUrl, "get-pods");
 
-          if (res.result?.pods && res.result.pods.length > 0) {
-            const sortedPods = res.result.pods.sort((a: NetworkPod, b: NetworkPod) =>
-              b.last_seen_timestamp - a.last_seen_timestamp
-            );
-            await setToDB(STORES.REGISTRY, cacheKeys.registryPods(network.id), sortedPods, CACHE_TTL.REGISTRY_PODS);
+          if (res.result) {
+            const data = res.result as NetworkPodsResponse;
+            if (data.pods && data.pods.length > 0) {
+              const sortedPods = data.pods.sort((a: NetworkPod, b: NetworkPod) =>
+                b.last_seen_timestamp - a.last_seen_timestamp
+              );
+              await setToDB(STORES.REGISTRY, cacheKeys.registryPods(network.id), sortedPods, CACHE_TTL.REGISTRY_PODS);
+            }
           }
         } catch (err) {
         }
@@ -721,29 +719,28 @@ export default function Home() {
       if (!network) return;
 
       try {
-        const response = await fetch("/api/prpc", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ endpoint: network.rpcUrl, method: "get-pods" }),
-        });
-        const res = await response.json();
+        // Use callRpcEndpoint which tries direct browser fetch first
+        const res = await callRpcEndpoint(network.rpcUrl, "get-pods");
 
-        if (res.result?.pods && res.result.pods.length > 0) {
-          const sortedPods = res.result.pods.sort((a: NetworkPod, b: NetworkPod) =>
-            b.last_seen_timestamp - a.last_seen_timestamp
-          );
+        if (res.result) {
+          const data = res.result as NetworkPodsResponse;
+          if (data.pods && data.pods.length > 0) {
+            const sortedPods = data.pods.sort((a: NetworkPod, b: NetworkPod) =>
+              b.last_seen_timestamp - a.last_seen_timestamp
+            );
 
-          // Update cache
-          await setToDB(STORES.REGISTRY, cacheKeys.registryPods(selectedNetwork), sortedPods, CACHE_TTL.REGISTRY_PODS);
+            // Update cache
+            await setToDB(STORES.REGISTRY, cacheKeys.registryPods(selectedNetwork), sortedPods, CACHE_TTL.REGISTRY_PODS);
 
-          // Update state if data changed
-          if (sortedPods.length !== registryPods.length) {
-            setRegistryPods(sortedPods);
-            const cachedNodes = await loadCachedNodes(sortedPods);
-            setNodes(cachedNodes);
+            // Update state if data changed
+            if (sortedPods.length !== registryPods.length) {
+              setRegistryPods(sortedPods);
+              const cachedNodes = await loadCachedNodes(sortedPods);
+              setNodes(cachedNodes);
+            }
+
+            setLastUpdate(new Date());
           }
-
-          setLastUpdate(new Date());
         }
       } catch (err) {
       }
@@ -751,7 +748,7 @@ export default function Home() {
 
     const interval = setInterval(backgroundRefresh, REFRESH_INTERVAL);
     return () => clearInterval(interval);
-  }, [selectedNetwork, isLoading, registryPods.length, loadCachedNodes]);
+  }, [selectedNetwork, isLoading, registryPods.length, loadCachedNodes, callRpcEndpoint]);
 
   // Calculate network stats
   const onlineNodes = nodes.filter((n) => n.status === "online");
