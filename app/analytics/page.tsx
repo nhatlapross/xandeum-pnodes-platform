@@ -445,7 +445,7 @@ export default function AnalyticsPage() {
           <div>
             <h4 className="text-sm font-medium mb-1">About This Data</h4>
             <p className="text-xs text-muted-foreground">
-              Historical data is collected every 5 minutes by sampling up to 20
+              Historical data is collected every 10 minutes by sampling up to 20
               nodes per network. Data is retained for 30 days. The metrics shown
               represent aggregated network-wide statistics including node
               availability, resource utilization, and storage capacity over time.

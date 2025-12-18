@@ -1,4 +1,6 @@
-# Xandeum pNodes Analytics Platform
+# Xnode
+
+## Xandeum pNodes Analytics Platform
 
 A web-based analytics platform for monitoring Xandeum pNodes network, similar to Solana validator dashboards like [stakewiz.com](https://stakewiz.com) and [validators.app](https://validators.app).
 
@@ -15,6 +17,7 @@ Xandeum is building a scalable storage layer for Solana dApps - a second tier of
 ## Features
 
 ### Dashboard
+
 - Real-time pNode network statistics
 - Online/Offline node counts
 - Total storage capacity across network
@@ -23,6 +26,7 @@ Xandeum is building a scalable storage layer for Solana dApps - a second tier of
 - Pod credits tracking
 
 ### Node Explorer
+
 - Detailed view of all pNodes from gossip network
 - Individual node stats (CPU, RAM, Storage, Uptime)
 - Node version information
@@ -31,6 +35,7 @@ Xandeum is building a scalable storage layer for Solana dApps - a second tier of
 - Search and filter by status, version, address
 
 ### Network Topology (3D Globe)
+
 - Interactive 3D visualization of global pNode distribution
 - Real-time node connections visualization
 - Color-coded by version status (latest, outdated, offline)
@@ -38,6 +43,7 @@ Xandeum is building a scalable storage layer for Solana dApps - a second tier of
 - Click to view node details
 
 ### Token Activity (XAND)
+
 - Live XAND token price and market cap
 - Recent transfers and transactions
 - Top holders distribution
@@ -46,6 +52,7 @@ Xandeum is building a scalable storage layer for Solana dApps - a second tier of
 - Data from Solscan API
 
 ### Historical Data & Charts
+
 - Network statistics over time (1h, 6h, 24h, 7d, 30d)
 - Node count trends (online/offline/total nodes)
 - Resource utilization history (CPU, RAM, Storage)
@@ -60,16 +67,16 @@ Xandeum is building a scalable storage layer for Solana dApps - a second tier of
 
 ## Tech Stack
 
-| Component | Technology |
-|-----------|------------|
-| Frontend | Next.js 15, React 19, TypeScript |
-| Styling | Tailwind CSS, shadcn/ui |
-| 3D Visualization | react-globe.gl, Three.js |
-| Charts | Recharts |
-| Backend Proxy | Express.js, Node.js |
-| Database | MongoDB Atlas |
-| Caching | IndexedDB (client), In-memory (server) |
-| Deployment | Vercel (frontend), Render (backend) |
+| Component        | Technology                             |
+| ---------------- | -------------------------------------- |
+| Frontend         | Next.js 15, React 19, TypeScript       |
+| Styling          | Tailwind CSS, shadcn/ui                |
+| 3D Visualization | react-globe.gl, Three.js               |
+| Charts           | Recharts                               |
+| Backend Proxy    | Express.js, Node.js                    |
+| Database         | MongoDB Atlas                          |
+| Caching          | IndexedDB (client), In-memory (server) |
+| Deployment       | Vercel (frontend), Render (backend)    |
 
 ## How It Works
 
@@ -167,31 +174,35 @@ The platform runs a background data collector that:
 
 ### Network Endpoints
 
-| Network | RPC Endpoint |
-|---------|-------------|
-| Devnet 1 | https://rpc1.pchednode.com/rpc |
-| Devnet 2 | https://rpc2.pchednode.com/rpc |
+| Network   | RPC Endpoint                   |
+| --------- | ------------------------------ |
+| Devnet 1  | https://rpc1.pchednode.com/rpc |
+| Devnet 2  | https://rpc2.pchednode.com/rpc |
 | Mainnet 1 | https://rpc3.pchednode.com/rpc |
 | Mainnet 2 | https://rpc4.pchednode.com/rpc |
 
 ## Screenshots
 
 ### Dashboard View
+
 - Network overview with key metrics
 - Node cards with status indicators
 - Table view with sorting and filtering
 
 ### Topology View
+
 - 3D globe visualization
 - Node distribution by geography
 - Connection lines between peers
 
 ### Activity View
+
 - Token price charts
 - Transfer history
 - Holder distribution
 
 ### Historical Charts View
+
 - Interactive time-series charts for all network metrics
 - Zoomable and scrollable chart interface
 - Time range selector (1h, 6h, 24h, 7d, 30d)
@@ -270,24 +281,26 @@ COLLECTOR_SCHEDULE=*/5 * * * *
 
 ### Proxy Server
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/pods/:network` | Get pNodes from network |
-| GET | `/api/pods` | Get pNodes from all networks |
-| POST | `/api/rpc` | Proxy any pRPC call |
-| GET | `/api/node/:ip` | Get individual node data |
-| GET | `/api/charts/network/:network` | Historical chart data |
-| GET | `/api/history/:network?range=24h` | Get historical data for specific time range |
-| GET | `/api/history/export/:network?format=csv` | Export historical data |
+| Method | Endpoint                                  | Description                                 |
+| ------ | ----------------------------------------- | ------------------------------------------- |
+| GET    | `/api/pods/:network`                      | Get pNodes from network                     |
+| GET    | `/api/pods`                               | Get pNodes from all networks                |
+| POST   | `/api/rpc`                                | Proxy any pRPC call                         |
+| GET    | `/api/node/:ip`                           | Get individual node data                    |
+| GET    | `/api/charts/network/:network`            | Historical chart data                       |
+| GET    | `/api/history/:network?range=24h`         | Get historical data for specific time range |
+| GET    | `/api/history/export/:network?format=csv` | Export historical data                      |
 
 #### Historical Data API Parameters
 
 **Query Parameters for `/api/history/:network`:**
+
 - `range`: Time range (`1h`, `6h`, `24h`, `7d`, `30d`) - default: `24h`
 - `aggregation`: Data aggregation level (`raw`, `hourly`, `daily`) - default: auto
 - `metrics`: Specific metrics to return (comma-separated) - default: all
 
 **Response Format:**
+
 ```json
 {
   "success": true,
@@ -351,16 +364,16 @@ xandeum-pnodes/
 
 ## Bounty Compliance
 
-| Requirement | Status |
-|-------------|--------|
-| Web-based analytics platform | ✅ |
-| Retrieve pNodes from gossip via pRPC | ✅ |
-| Display pNode information | ✅ |
-| Live, functional website | ✅ |
-| Documentation | ✅ |
-| Clear information display | ✅ |
-| User-friendly interface | ✅ |
-| Innovation (3D globe, charts, historical data) | ✅ |
+| Requirement                                    | Status |
+| ---------------------------------------------- | ------ |
+| Web-based analytics platform                   | ✅     |
+| Retrieve pNodes from gossip via pRPC           | ✅     |
+| Display pNode information                      | ✅     |
+| Live, functional website                       | ✅     |
+| Documentation                                  | ✅     |
+| Clear information display                      | ✅     |
+| User-friendly interface                        | ✅     |
+| Innovation (3D globe, charts, historical data) | ✅     |
 
 ## Contributing
 
