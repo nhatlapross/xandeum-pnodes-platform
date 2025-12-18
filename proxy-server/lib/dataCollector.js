@@ -3,6 +3,9 @@ const fetch = require('node-fetch');
 const AbortController = require('abort-controller');
 const { saveNetworkSnapshot, saveNodeHistory } = require('./mongodb');
 
+// Configuration from environment variables
+const COLLECTOR_BATCH_SIZE = parseInt(process.env.COLLECTOR_BATCH_SIZE, 10) || 10; // Nodes to process in parallel per batch
+
 // RPC endpoints configuration
 const RPC_ENDPOINTS = {
   devnet1: 'https://rpc1.pchednode.com/rpc',
@@ -162,16 +165,15 @@ async function collectNetworkData(network) {
   // Sort by last_seen_timestamp to get most active nodes first
   const sortedPods = [...pods].sort((a, b) => b.last_seen_timestamp - a.last_seen_timestamp);
 
-  // Sample more nodes for better accuracy (limit to 30 for performance)
-  const sampleSize = Math.min(30, sortedPods.length);
-  const sampledPods = sortedPods.slice(0, sampleSize);
+  // Collect ALL nodes (no sampling limit)
+  const allPods = sortedPods;
 
-  console.log(`[Collector] Sampling ${sampleSize} nodes from ${totalPods} total...`);
+  console.log(`[Collector] Collecting data from ALL ${totalPods} nodes (batch size: ${COLLECTOR_BATCH_SIZE})...`);
 
-  // Fetch stats for sampled nodes in parallel (batch of 5)
+  // Fetch stats for ALL nodes in parallel batches
   const nodeStats = [];
-  for (let i = 0; i < sampledPods.length; i += 5) {
-    const batch = sampledPods.slice(i, i + 5);
+  for (let i = 0; i < allPods.length; i += COLLECTOR_BATCH_SIZE) {
+    const batch = allPods.slice(i, i + COLLECTOR_BATCH_SIZE);
     const batchStats = await Promise.all(
       batch.map(async (pod) => {
         const stats = await fetchNodeStats(pod.address);
@@ -187,9 +189,9 @@ async function collectNetworkData(network) {
     );
     nodeStats.push(...batchStats);
 
-    // Log progress
+    // Log progress every batch
     const onlineCount = nodeStats.filter(n => n.status === 'online').length;
-    console.log(`[Collector] Progress: ${nodeStats.length}/${sampleSize} sampled, ${onlineCount} online`);
+    console.log(`[Collector] Progress: ${nodeStats.length}/${totalPods} nodes, ${onlineCount} online`);
   }
 
   // Calculate aggregated stats
@@ -204,20 +206,18 @@ async function collectNetworkData(network) {
     return acc;
   }, {});
 
-  // Estimate total online/offline based on sample ratio
+  // Calculate actual online ratio (no estimation needed - we collected ALL nodes)
   const onlineRatio = nodeStats.length > 0 ? onlineNodes.length / nodeStats.length : 0;
-  const estimatedOnline = Math.round(totalPods * onlineRatio);
-  const estimatedOffline = totalPods - estimatedOnline;
 
   const aggregatedData = {
     totalPods,
-    // Use sampled counts for accuracy
+    // Keep field names for backward compatibility (now collecting ALL nodes, so these are actual counts)
     sampledCount: nodeStats.length,
     onlineNodes: onlineNodes.length,
     offlineNodes: offlineNodes.length,
-    // Estimated totals based on sample ratio
-    estimatedOnline,
-    estimatedOffline,
+    // Now these are ACTUAL counts (not estimates) since we collect all nodes
+    estimatedOnline: onlineNodes.length,
+    estimatedOffline: offlineNodes.length,
     onlineRatio: Math.round(onlineRatio * 100),
     // Resource stats from online nodes
     totalStorage: onlineNodes.reduce((acc, n) => acc + (n.storage || 0), 0),
@@ -247,7 +247,7 @@ async function collectNetworkData(network) {
   await saveNetworkSnapshot(network, aggregatedData);
   await saveNodeHistory(nodeStats.filter(n => n.status === 'online')); // Only save online nodes to history
 
-  console.log(`[Collector] ${network}: ${totalPods} pods, ${onlineNodes.length}/${nodeStats.length} sampled online (${aggregatedData.onlineRatio}%)`);
+  console.log(`[Collector] ${network}: ${totalPods} total, ${onlineNodes.length} online, ${offlineNodes.length} offline (${aggregatedData.onlineRatio}% online)`);
 
   return aggregatedData;
 }
