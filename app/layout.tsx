@@ -17,19 +17,31 @@ const shareTechMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Xnode - Xandeum pNode Analytics Platform",
-  description: "Real-time analytics and monitoring platform for Xandeum pNodes. Track network topology, node performance, uptime, and geographic distribution.",
-  keywords: ["Xandeum", "pNode", "analytics", "blockchain", "storage", "monitoring", "dashboard"],
+  title: "Xnode",
+  description:
+    "Real-time analytics and monitoring platform for Xandeum pNodes. Track network topology, node performance, uptime, and geographic distribution.",
+  keywords: [
+    "Xandeum",
+    "pNode",
+    "analytics",
+    "blockchain",
+    "storage",
+    "monitoring",
+    "dashboard",
+  ],
   authors: [{ name: "Xnode Team" }],
   creator: "Xnode",
   publisher: "Xnode",
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
+  ),
   openGraph: {
     type: "website",
     locale: "en_US",
     url: "/",
-    title: "Xnode - Xandeum pNode Analytics Platform",
-    description: "Real-time analytics and monitoring platform for Xandeum pNodes. Track network topology, node performance, uptime, and geographic distribution.",
+    title: "Xnode",
+    description:
+      "Real-time analytics and monitoring platform for Xandeum pNodes. Track network topology, node performance, uptime, and geographic distribution.",
     siteName: "Xnode",
     images: [
       {
@@ -42,8 +54,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Xnode - Xandeum pNode Analytics Platform",
-    description: "Real-time analytics and monitoring platform for Xandeum pNodes. Track network topology, node performance, uptime, and geographic distribution.",
+    title: "Xnode",
+    description:
+      "Real-time analytics and monitoring platform for Xandeum pNodes. Track network topology, node performance, uptime, and geographic distribution.",
     images: ["/og-image.png"],
   },
   robots: {

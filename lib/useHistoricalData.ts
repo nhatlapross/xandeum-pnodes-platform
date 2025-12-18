@@ -112,7 +112,8 @@ export interface HistoryStatsResponse {
   success: boolean
   period: string
   aggregated: AggregatedStats
-  latest: Record<string, LatestNetworkData>
+  // Backend returns array, but we transform it to Record in the hook
+  latest: LatestNetworkData[] | Record<string, LatestNetworkData>
 }
 
 export interface HistoryLatestResponse {
@@ -165,7 +166,7 @@ export function useNetworkHistory({
 }: UseNetworkHistoryOptions): UseNetworkHistoryReturn {
   const [data, setData] = useState<NetworkSnapshot[]>([])
   const [chartData, setChartData] = useState<NetworkChartData | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true) // Start as true to show loading state on first render
   const [error, setError] = useState<string | null>(null)
   const [currentPeriod, setCurrentPeriod] = useState<HistoryPeriod>(initialPeriod)
 
@@ -186,6 +187,10 @@ export function useNetworkHistory({
     if (!USE_PROXY || fetchingRef.current || !network) {
       if (process.env.NODE_ENV === 'development' && !USE_PROXY) {
         console.warn('[useNetworkHistory] Proxy not configured. Set NEXT_PUBLIC_PROXY_URL in .env.local and restart the dev server.')
+      }
+      // Set isLoading to false if proxy is not configured or network is empty
+      if (!USE_PROXY || !network) {
+        setIsLoading(false)
       }
       return
     }
@@ -398,13 +403,19 @@ export function useHistoryStats({
 }: UseHistoryStatsOptions = {}): UseHistoryStatsReturn {
   const [aggregated, setAggregated] = useState<AggregatedStats | null>(null)
   const [latest, setLatest] = useState<Record<string, LatestNetworkData>>({})
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true) // Start as true to show loading state on first render
   const [error, setError] = useState<string | null>(null)
 
   const fetchingRef = useRef(false)
 
   const fetchStats = useCallback(async () => {
-    if (!USE_PROXY || fetchingRef.current) return
+    if (!USE_PROXY || fetchingRef.current) {
+      // Set isLoading to false if proxy is not configured
+      if (!USE_PROXY) {
+        setIsLoading(false)
+      }
+      return
+    }
 
     fetchingRef.current = true
     setIsLoading(true)
@@ -424,7 +435,18 @@ export function useHistoryStats({
       }
 
       setAggregated(result.aggregated)
-      setLatest(result.latest)
+      // Transform latest array to object keyed by network name
+      // Backend returns: [{ network: 'devnet1', ... }, { network: 'devnet2', ... }]
+      // Frontend expects: { devnet1: { ... }, devnet2: { ... } }
+      const latestData = Array.isArray(result.latest)
+        ? result.latest.reduce((acc, snapshot) => {
+            if (snapshot.network) {
+              acc[snapshot.network] = snapshot
+            }
+            return acc
+          }, {} as Record<string, LatestNetworkData>)
+        : result.latest
+      setLatest(latestData)
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message)
@@ -491,14 +513,20 @@ export function useNetworkComparison({
 }: UseNetworkComparisonOptions = {}): UseNetworkComparisonReturn {
   const [networks, setNetworks] = useState<string[]>([])
   const [data, setData] = useState<Record<string, ComparisonData[]>>({})
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true) // Start as true to show loading state on first render
   const [error, setError] = useState<string | null>(null)
   const [currentPeriod, setCurrentPeriod] = useState<HistoryPeriod>(initialPeriod)
 
   const fetchingRef = useRef(false)
 
   const fetchComparison = useCallback(async () => {
-    if (!USE_PROXY || fetchingRef.current) return
+    if (!USE_PROXY || fetchingRef.current) {
+      // Set isLoading to false if proxy is not configured
+      if (!USE_PROXY) {
+        setIsLoading(false)
+      }
+      return
+    }
 
     fetchingRef.current = true
     setIsLoading(true)

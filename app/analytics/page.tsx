@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   LayoutDashboard,
   Server,
@@ -83,10 +83,8 @@ export default function AnalyticsPage() {
     period: selectedPeriod,
   });
 
-  // Fetch aggregated stats
+  // Fetch aggregated stats (kept for potential future use)
   const {
-    aggregated,
-    latest,
     isLoading: statsLoading,
     refresh: refreshStats,
   } = useHistoryStats({
@@ -94,6 +92,31 @@ export default function AnalyticsPage() {
   });
 
   const isLoading = networkLoading || comparisonLoading || statsLoading;
+
+  // Calculate period stats from chartData (responds to period/network changes)
+  const periodStats = useMemo(() => {
+    if (!chartData) {
+      return { totalPods: 0, online: 0, avgCpu: 0, avgRam: 0 };
+    }
+
+    const nodes = chartData.nodes || [];
+    const resources = chartData.resources || [];
+
+    // Get latest values from nodes data
+    const latestNode = nodes[nodes.length - 1];
+    const totalPods = latestNode?.total || 0;
+    const online = latestNode?.online || 0;
+
+    // Calculate averages for the period
+    const avgCpu = resources.length > 0
+      ? resources.reduce((sum, r) => sum + (r.cpu || 0), 0) / resources.length
+      : 0;
+    const avgRam = resources.length > 0
+      ? resources.reduce((sum, r) => sum + (r.ram || 0), 0) / resources.length
+      : 0;
+
+    return { totalPods, online, avgCpu, avgRam };
+  }, [chartData]);
 
   const handleRefresh = () => {
     refreshNetwork();
@@ -199,7 +222,11 @@ export default function AnalyticsPage() {
             </span>
           </div>
           <p className="text-3xl font-light font-mono">
-            {aggregated?.totalPods || latest[selectedNetwork]?.totalPods || 0}
+            {networkLoading || !chartData ? (
+              <span className="animate-pulse text-muted-foreground">--</span>
+            ) : (
+              periodStats.totalPods
+            )}
           </p>
         </BracketCard>
 
@@ -211,7 +238,11 @@ export default function AnalyticsPage() {
             </span>
           </div>
           <p className="text-3xl font-light font-mono text-green-500">
-            {latest[selectedNetwork]?.onlineNodes || 0}
+            {networkLoading || !chartData ? (
+              <span className="animate-pulse text-muted-foreground">--</span>
+            ) : (
+              periodStats.online
+            )}
           </p>
         </BracketCard>
 
@@ -223,7 +254,11 @@ export default function AnalyticsPage() {
             </span>
           </div>
           <p className="text-3xl font-light font-mono text-cyan-500">
-            {(latest[selectedNetwork]?.avgCpu || 0).toFixed(1)}%
+            {networkLoading || !chartData ? (
+              <span className="animate-pulse text-muted-foreground">--</span>
+            ) : (
+              `${periodStats.avgCpu.toFixed(1)}%`
+            )}
           </p>
         </BracketCard>
 
@@ -235,7 +270,11 @@ export default function AnalyticsPage() {
             </span>
           </div>
           <p className="text-3xl font-light font-mono text-purple-500">
-            {(latest[selectedNetwork]?.avgRam || 0).toFixed(1)}%
+            {networkLoading || !chartData ? (
+              <span className="animate-pulse text-muted-foreground">--</span>
+            ) : (
+              `${periodStats.avgRam.toFixed(1)}%`
+            )}
           </p>
         </BracketCard>
       </div>
@@ -294,7 +333,7 @@ export default function AnalyticsPage() {
             </div>
             <NetworkHealthChart
               data={chartData?.nodes || []}
-              isLoading={networkLoading}
+              isLoading={networkLoading || !chartData}
             />
           </BracketCard>
         </TabsContent>
@@ -314,7 +353,7 @@ export default function AnalyticsPage() {
             </div>
             <ResourceUsageChart
               data={chartData?.resources || []}
-              isLoading={networkLoading}
+              isLoading={networkLoading || !chartData}
             />
           </BracketCard>
         </TabsContent>
@@ -334,7 +373,7 @@ export default function AnalyticsPage() {
             </div>
             <StorageTrendChart
               data={chartData?.storage || []}
-              isLoading={networkLoading}
+              isLoading={networkLoading || !chartData}
             />
           </BracketCard>
         </TabsContent>
@@ -355,7 +394,7 @@ export default function AnalyticsPage() {
               <NetworkComparisonChart
                 networks={networks}
                 data={comparisonData}
-                isLoading={comparisonLoading}
+                isLoading={comparisonLoading || networks.length === 0}
                 metric="online"
               />
             </BracketCard>
@@ -373,7 +412,7 @@ export default function AnalyticsPage() {
               <NetworkComparisonChart
                 networks={networks}
                 data={comparisonData}
-                isLoading={comparisonLoading}
+                isLoading={comparisonLoading || networks.length === 0}
                 metric="avgCpu"
               />
             </BracketCard>
@@ -391,7 +430,7 @@ export default function AnalyticsPage() {
               <NetworkComparisonChart
                 networks={networks}
                 data={comparisonData}
-                isLoading={comparisonLoading}
+                isLoading={comparisonLoading || networks.length === 0}
                 metric="total"
               />
             </BracketCard>

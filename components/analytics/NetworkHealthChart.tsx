@@ -22,6 +22,8 @@ export function NetworkHealthChart({ data, isLoading }: NetworkHealthChartProps)
   const chartData = useMemo(() => {
     return data.map(d => ({
       ...d,
+      // Calculate offline as total - online so the numbers add up correctly
+      offline: (d.total || 0) - (d.online || 0),
       time: new Date(d.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       timestamp: d.time,
     }))
