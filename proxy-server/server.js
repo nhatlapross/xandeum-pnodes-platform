@@ -7,6 +7,7 @@ const fetch = require('node-fetch');
 // MongoDB and data collector
 const mongodb = require('./lib/mongodb');
 const { startCollector, getLatestData } = require('./lib/dataCollector');
+const telegramBot = require('./lib/telegramBot');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -513,6 +514,15 @@ async function startServer() {
   const collectorSchedule = process.env.COLLECTOR_SCHEDULE || '*/5 * * * *';
   startCollector(collectorSchedule);
 
+  // Initialize Telegram bot
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  if (botToken) {
+    telegramBot.initBot(botToken);
+    console.log('Telegram bot: enabled');
+  } else {
+    console.log('Telegram bot: disabled (no TELEGRAM_BOT_TOKEN)');
+  }
+
   // Start Express server
   app.listen(PORT, () => {
     console.log(`Xandeum RPC Proxy running on port ${PORT}`);
@@ -525,12 +535,14 @@ async function startServer() {
 // Graceful shutdown
 process.on('SIGINT', async () => {
   console.log('\nShutting down...');
+  telegramBot.stopBot();
   await mongodb.close();
   process.exit(0);
 });
 
 process.on('SIGTERM', async () => {
   console.log('\nShutting down...');
+  telegramBot.stopBot();
   await mongodb.close();
   process.exit(0);
 });

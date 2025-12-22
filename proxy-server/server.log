@@ -1,0 +1,353 @@
+[MongoDB] Indexes created
+[MongoDB] Connected successfully
+[Collector] Starting with schedule: */10 * * * *
+[Telegram] Bot initialized
+[Telegram] Commands registered
+Telegram bot: enabled
+Xandeum RPC Proxy running on port 3001
+Endpoints: devnet1, devnet2, mainnet1, mainnet2
+MongoDB: connected
+Data collector: */10 * * * *
+[Collector] Starting data collection cycle...
+[Collector] Collecting data for devnet1...
+[Collector] Collecting data from ALL 232 nodes (batch size: 10)...
+[Collector] Progress: 10/232 nodes, 1 online
+[Collector] Progress: 20/232 nodes, 3 online
+[Collector] Progress: 30/232 nodes, 5 online
+[Collector] Progress: 40/232 nodes, 9 online
+[Collector] Progress: 50/232 nodes, 10 online
+[Collector] Progress: 60/232 nodes, 16 online
+[Collector] Progress: 70/232 nodes, 18 online
+[Collector] Progress: 80/232 nodes, 18 online
+[Collector] Progress: 90/232 nodes, 20 online
+[Collector] Progress: 100/232 nodes, 23 online
+[Collector] Progress: 110/232 nodes, 27 online
+[Collector] Progress: 120/232 nodes, 29 online
+[Collector] Progress: 130/232 nodes, 33 online
+[Collector] Progress: 140/232 nodes, 37 online
+[Collector] Progress: 150/232 nodes, 40 online
+[Collector] Progress: 160/232 nodes, 43 online
+[Collector] Starting data collection cycle...
+[Collector] Collecting data for devnet1...
+[Collector] Collecting data from ALL 232 nodes (batch size: 10)...
+[Collector] Progress: 170/232 nodes, 44 online
+[Collector] Progress: 10/232 nodes, 2 online
+[Collector] Progress: 180/232 nodes, 48 online
+[Collector] Progress: 20/232 nodes, 4 online
+[Collector] Progress: 190/232 nodes, 52 online
+[Collector] Progress: 30/232 nodes, 7 online
+[Collector] Progress: 200/232 nodes, 53 online
+[Collector] Progress: 40/232 nodes, 8 online
+[Collector] Progress: 210/232 nodes, 55 online
+[Collector] Progress: 50/232 nodes, 12 online
+[Collector] Progress: 220/232 nodes, 55 online
+[Collector] Progress: 60/232 nodes, 15 online
+[Collector] Progress: 230/232 nodes, 55 online
+[Collector] Progress: 70/232 nodes, 19 online
+[Collector] Progress: 232/232 nodes, 55 online
+[MongoDB] Saved snapshot for devnet1: 55/232 sampled online
+[MongoDB] Saved 55 node history records
+[Collector] devnet1: 232 total, 55 online, 177 offline (24% online)
+[Collector] Collecting data for devnet2...
+[Collector] Collecting data from ALL 232 nodes (batch size: 10)...
+[Collector] Progress: 80/232 nodes, 19 online
+[Collector] Progress: 10/232 nodes, 1 online
+[Collector] Progress: 90/232 nodes, 21 online
+[Collector] Progress: 20/232 nodes, 6 online
+[Collector] Progress: 100/232 nodes, 24 online
+[Collector] Progress: 30/232 nodes, 9 online
+[Collector] Progress: 110/232 nodes, 26 online
+[Collector] Progress: 40/232 nodes, 12 online
+[Collector] Progress: 120/232 nodes, 31 online
+[Collector] Progress: 50/232 nodes, 13 online
+[Collector] Progress: 130/232 nodes, 34 online
+[Collector] Progress: 60/232 nodes, 15 online
+[Collector] Progress: 140/232 nodes, 37 online
+[Collector] Progress: 70/232 nodes, 17 online
+[Collector] Progress: 150/232 nodes, 41 online
+[Collector] Progress: 80/232 nodes, 23 online
+[Collector] Progress: 160/232 nodes, 46 online
+[Collector] Progress: 90/232 nodes, 26 online
+[Collector] Progress: 170/232 nodes, 48 online
+[Collector] Progress: 100/232 nodes, 28 online
+[Collector] Progress: 180/232 nodes, 53 online
+[Collector] Progress: 110/232 nodes, 32 online
+[Collector] Progress: 190/232 nodes, 53 online
+[Collector] Progress: 120/232 nodes, 32 online
+[Collector] Progress: 200/232 nodes, 55 online
+[Collector] Progress: 130/232 nodes, 32 online
+[Collector] Progress: 210/232 nodes, 55 online
+[Collector] Progress: 140/232 nodes, 34 online
+[Collector] Progress: 220/232 nodes, 55 online
+[Collector] Progress: 150/232 nodes, 38 online
+[Collector] Progress: 230/232 nodes, 55 online
+[Collector] Progress: 160/232 nodes, 42 online
+[Collector] Progress: 232/232 nodes, 55 online
+[MongoDB] Saved snapshot for devnet1: 55/232 sampled online
+[MongoDB] Saved 55 node history records
+[Collector] devnet1: 232 total, 55 online, 177 offline (24% online)
+[Collector] Collecting data for devnet2...
+[Collector] Collecting data from ALL 232 nodes (batch size: 10)...
+[Collector] Progress: 170/232 nodes, 45 online
+[Collector] Progress: 10/232 nodes, 4 online
+[Collector] Progress: 180/232 nodes, 50 online
+[Collector] Progress: 20/232 nodes, 5 online
+[Collector] Progress: 190/232 nodes, 51 online
+[Collector] Progress: 30/232 nodes, 7 online
+[Collector] Progress: 200/232 nodes, 55 online
+[Collector] Progress: 40/232 nodes, 8 online
+[Collector] Progress: 210/232 nodes, 55 online
+[Collector] Progress: 50/232 nodes, 11 online
+[Collector] Progress: 220/232 nodes, 55 online
+[Collector] Progress: 60/232 nodes, 15 online
+[Collector] Progress: 230/232 nodes, 55 online
+[Collector] Progress: 70/232 nodes, 16 online
+[Collector] Progress: 232/232 nodes, 55 online
+[MongoDB] Saved snapshot for devnet2: 55/232 sampled online
+[MongoDB] Saved 55 node history records
+[Collector] devnet2: 232 total, 55 online, 177 offline (24% online)
+[Collector] Collecting data for mainnet1...
+[Collector] Failed to fetch pods from mainnet1: invalid json response body at https://rpc3.pchednode.com/rpc reason: Unexpected token '<', "<html>
+<h"... is not valid JSON
+[Collector] No pods data for mainnet1
+[Collector] Collecting data for mainnet2...
+[Collector] Failed to fetch pods from mainnet2: invalid json response body at https://rpc4.pchednode.com/rpc reason: Unexpected token '<', "<html>
+<h"... is not valid JSON
+[Collector] No pods data for mainnet2
+[Collector] Collection cycle completed in 389.38s
+[Collector] Progress: 80/232 nodes, 20 online
+[Collector] Progress: 90/232 nodes, 23 online
+[Collector] Progress: 100/232 nodes, 28 online
+[Collector] Progress: 110/232 nodes, 31 online
+[Collector] Progress: 120/232 nodes, 32 online
+[Collector] Progress: 130/232 nodes, 35 online
+[Collector] Progress: 140/232 nodes, 38 online
+[Collector] Progress: 150/232 nodes, 40 online
+[Collector] Progress: 160/232 nodes, 41 online
+[Collector] Progress: 170/232 nodes, 45 online
+[Collector] Progress: 180/232 nodes, 47 online
+[Collector] Progress: 190/232 nodes, 49 online
+[Collector] Progress: 200/232 nodes, 49 online
+[Collector] Progress: 210/232 nodes, 53 online
+[Collector] Progress: 220/232 nodes, 54 online
+[Collector] Progress: 230/232 nodes, 55 online
+[Collector] Progress: 232/232 nodes, 55 online
+[MongoDB] Saved snapshot for devnet2: 55/232 sampled online
+[MongoDB] Saved 55 node history records
+[Collector] devnet2: 232 total, 55 online, 177 offline (24% online)
+[Collector] Collecting data for mainnet1...
+[Collector] Failed to fetch pods from mainnet1: invalid json response body at https://rpc3.pchednode.com/rpc reason: Unexpected token '<', "<html>
+<h"... is not valid JSON
+[Collector] No pods data for mainnet1
+[Collector] Collecting data for mainnet2...
+[Collector] Failed to fetch pods from mainnet2: invalid json response body at https://rpc4.pchednode.com/rpc reason: Unexpected token '<', "<html>
+<h"... is not valid JSON
+[Collector] No pods data for mainnet2
+[Collector] Collection cycle completed in 388.99s
+[Collector] Starting data collection cycle...
+[Collector] Collecting data for devnet1...
+[Collector] Collecting data from ALL 232 nodes (batch size: 10)...
+[Collector] Progress: 10/232 nodes, 2 online
+[Collector] Progress: 20/232 nodes, 7 online
+[Collector] Progress: 30/232 nodes, 8 online
+[Collector] Progress: 40/232 nodes, 10 online
+[Collector] Progress: 50/232 nodes, 14 online
+[Collector] Progress: 60/232 nodes, 17 online
+[Collector] Progress: 70/232 nodes, 21 online
+[Collector] Progress: 80/232 nodes, 24 online
+[Collector] Progress: 90/232 nodes, 26 online
+[Collector] Progress: 100/232 nodes, 28 online
+[Collector] Progress: 110/232 nodes, 30 online
+[Collector] Progress: 120/232 nodes, 33 online
+[Collector] Progress: 130/232 nodes, 37 online
+[Collector] Progress: 140/232 nodes, 40 online
+[Collector] Progress: 150/232 nodes, 46 online
+[Collector] Progress: 160/232 nodes, 48 online
+[Collector] Progress: 170/232 nodes, 50 online
+[Collector] Progress: 180/232 nodes, 52 online
+[Collector] Progress: 190/232 nodes, 52 online
+[Collector] Progress: 200/232 nodes, 53 online
+[Collector] Progress: 210/232 nodes, 55 online
+[Collector] Progress: 220/232 nodes, 55 online
+[Collector] Progress: 230/232 nodes, 55 online
+[Collector] Progress: 232/232 nodes, 55 online
+[MongoDB] Saved snapshot for devnet1: 55/232 sampled online
+[MongoDB] Saved 55 node history records
+[Collector] devnet1: 232 total, 55 online, 177 offline (24% online)
+[Collector] Collecting data for devnet2...
+[Collector] Collecting data from ALL 232 nodes (batch size: 10)...
+[Collector] Progress: 10/232 nodes, 2 online
+[Collector] Progress: 20/232 nodes, 4 online
+[Collector] Progress: 30/232 nodes, 8 online
+[Collector] Progress: 40/232 nodes, 9 online
+[Collector] Progress: 50/232 nodes, 11 online
+[Collector] Progress: 60/232 nodes, 16 online
+[Collector] Progress: 70/232 nodes, 21 online
+[Collector] Progress: 80/232 nodes, 22 online
+[Collector] Progress: 90/232 nodes, 24 online
+[Collector] Progress: 100/232 nodes, 28 online
+[Collector] Progress: 110/232 nodes, 30 online
+[Collector] Progress: 120/232 nodes, 34 online
+[Collector] Progress: 130/232 nodes, 36 online
+[Collector] Progress: 140/232 nodes, 37 online
+[Collector] Progress: 150/232 nodes, 42 online
+[Collector] Progress: 160/232 nodes, 46 online
+[Collector] Progress: 170/232 nodes, 49 online
+[Collector] Progress: 180/232 nodes, 51 online
+[Collector] Progress: 190/232 nodes, 53 online
+[Collector] Progress: 200/232 nodes, 55 online
+[Collector] Progress: 210/232 nodes, 55 online
+error: [polling_error] {"code":"EFATAL","message":"EFATAL: AggregateError"}
+[Collector] Progress: 220/232 nodes, 55 online
+error: [polling_error] {"code":"EFATAL","message":"EFATAL: AggregateError"}
+[Collector] Progress: 230/232 nodes, 55 online
+[Collector] Progress: 232/232 nodes, 55 online
+[MongoDB] Saved snapshot for devnet2: 55/232 sampled online
+[MongoDB] Saved 55 node history records
+[Collector] devnet2: 232 total, 55 online, 177 offline (24% online)
+[Collector] Collecting data for mainnet1...
+[Collector] Failed to fetch pods from mainnet1: invalid json response body at https://rpc3.pchednode.com/rpc reason: Unexpected token '<', "<html>
+<h"... is not valid JSON
+[Collector] No pods data for mainnet1
+[Collector] Collecting data for mainnet2...
+[Collector] Failed to fetch pods from mainnet2: invalid json response body at https://rpc4.pchednode.com/rpc reason: Unexpected token '<', "<html>
+<h"... is not valid JSON
+[Collector] No pods data for mainnet2
+[Collector] Collection cycle completed in 448.24s
+[Collector] Starting data collection cycle...
+[Collector] Collecting data for devnet1...
+[Collector] Collecting data from ALL 232 nodes (batch size: 10)...
+[Collector] Progress: 10/232 nodes, 3 online
+[Collector] Progress: 20/232 nodes, 4 online
+[Collector] Progress: 30/232 nodes, 7 online
+[Collector] Progress: 40/232 nodes, 7 online
+[Collector] Progress: 50/232 nodes, 11 online
+[Collector] Progress: 60/232 nodes, 13 online
+[Collector] Progress: 70/232 nodes, 20 online
+[Collector] Progress: 80/232 nodes, 21 online
+[Collector] Progress: 90/232 nodes, 22 online
+[Collector] Progress: 100/232 nodes, 25 online
+[Collector] Progress: 110/232 nodes, 31 online
+[Collector] Progress: 120/232 nodes, 33 online
+[Collector] Progress: 130/232 nodes, 37 online
+[Collector] Progress: 140/232 nodes, 39 online
+[Collector] Progress: 150/232 nodes, 41 online
+[Collector] Progress: 160/232 nodes, 43 online
+[Collector] Progress: 170/232 nodes, 46 online
+[Collector] Progress: 180/232 nodes, 49 online
+[Collector] Progress: 190/232 nodes, 49 online
+[Collector] Progress: 200/232 nodes, 55 online
+[Collector] Progress: 210/232 nodes, 55 online
+[Collector] Progress: 220/232 nodes, 55 online
+[Collector] Progress: 230/232 nodes, 55 online
+[Collector] Progress: 232/232 nodes, 55 online
+[MongoDB] Saved snapshot for devnet1: 55/232 sampled online
+[MongoDB] Saved 55 node history records
+[Collector] devnet1: 232 total, 55 online, 177 offline (24% online)
+[Collector] Collecting data for devnet2...
+[Collector] Collecting data from ALL 232 nodes (batch size: 10)...
+[Collector] Progress: 10/232 nodes, 3 online
+[Collector] Progress: 20/232 nodes, 5 online
+[Collector] Progress: 30/232 nodes, 6 online
+[Collector] Progress: 40/232 nodes, 8 online
+[Collector] Progress: 50/232 nodes, 8 online
+[Collector] Progress: 60/232 nodes, 13 online
+[Collector] Progress: 70/232 nodes, 14 online
+[Collector] Progress: 80/232 nodes, 17 online
+[Collector] Progress: 90/232 nodes, 21 online
+[Collector] Progress: 100/232 nodes, 23 online
+[Collector] Progress: 110/232 nodes, 27 online
+[Collector] Progress: 120/232 nodes, 31 online
+[Collector] Progress: 130/232 nodes, 34 online
+[Collector] Progress: 140/232 nodes, 37 online
+[Collector] Progress: 150/232 nodes, 40 online
+[Collector] Progress: 160/232 nodes, 43 online
+[Collector] Progress: 170/232 nodes, 45 online
+[Collector] Progress: 180/232 nodes, 50 online
+[Collector] Progress: 190/232 nodes, 53 online
+[Collector] Progress: 200/232 nodes, 54 online
+[Collector] Progress: 210/232 nodes, 55 online
+[Collector] Progress: 220/232 nodes, 55 online
+[Collector] Progress: 230/232 nodes, 55 online
+[Collector] Progress: 232/232 nodes, 55 online
+[MongoDB] Saved snapshot for devnet2: 55/232 sampled online
+[MongoDB] Saved 55 node history records
+[Collector] devnet2: 232 total, 55 online, 177 offline (24% online)
+[Collector] Collecting data for mainnet1...
+[Collector] Failed to fetch pods from mainnet1: invalid json response body at https://rpc3.pchednode.com/rpc reason: Unexpected token '<', "<html>
+<h"... is not valid JSON
+[Collector] No pods data for mainnet1
+[Collector] Collecting data for mainnet2...
+[Collector] Failed to fetch pods from mainnet2: invalid json response body at https://rpc4.pchednode.com/rpc reason: Unexpected token '<', "<html>
+<h"... is not valid JSON
+[Collector] No pods data for mainnet2
+[Collector] Collection cycle completed in 382.75s
+[Collector] Starting data collection cycle...
+[Collector] Collecting data for devnet1...
+[Collector] Collecting data from ALL 232 nodes (batch size: 10)...
+[Collector] Progress: 10/232 nodes, 3 online
+[Collector] Progress: 20/232 nodes, 4 online
+[Collector] Progress: 30/232 nodes, 5 online
+[Collector] Progress: 40/232 nodes, 8 online
+[Collector] Progress: 50/232 nodes, 10 online
+error: [polling_error] {"code":"EFATAL","message":"EFATAL: AggregateError"}
+[Collector] Progress: 60/232 nodes, 13 online
+[Collector] Progress: 70/232 nodes, 17 online
+[Collector] Progress: 80/232 nodes, 17 online
+[Collector] Progress: 90/232 nodes, 21 online
+[Collector] Progress: 100/232 nodes, 24 online
+[Collector] Progress: 110/232 nodes, 29 online
+[Collector] Progress: 120/232 nodes, 33 online
+[Collector] Progress: 130/232 nodes, 35 online
+[Collector] Progress: 140/232 nodes, 38 online
+[Collector] Progress: 150/232 nodes, 42 online
+[Collector] Progress: 160/232 nodes, 45 online
+[Collector] Progress: 170/232 nodes, 47 online
+[Collector] Progress: 180/232 nodes, 49 online
+[Collector] Progress: 190/232 nodes, 52 online
+[Collector] Progress: 200/232 nodes, 54 online
+[Collector] Progress: 210/232 nodes, 55 online
+[Collector] Progress: 220/232 nodes, 55 online
+[Collector] Progress: 230/232 nodes, 55 online
+[Collector] Progress: 232/232 nodes, 55 online
+[MongoDB] Saved snapshot for devnet1: 55/232 sampled online
+[MongoDB] Saved 55 node history records
+[Collector] devnet1: 232 total, 55 online, 177 offline (24% online)
+[Collector] Collecting data for devnet2...
+[Collector] Collecting data from ALL 232 nodes (batch size: 10)...
+[Collector] Progress: 10/232 nodes, 3 online
+[Collector] Progress: 20/232 nodes, 5 online
+[Collector] Progress: 30/232 nodes, 8 online
+[Collector] Progress: 40/232 nodes, 10 online
+[Collector] Progress: 50/232 nodes, 12 online
+[Collector] Progress: 60/232 nodes, 16 online
+[Collector] Progress: 70/232 nodes, 19 online
+[Collector] Progress: 80/232 nodes, 23 online
+[Collector] Progress: 90/232 nodes, 27 online
+[Collector] Progress: 100/232 nodes, 32 online
+[Collector] Progress: 110/232 nodes, 37 online
+[Collector] Progress: 120/232 nodes, 40 online
+[Collector] Progress: 130/232 nodes, 43 online
+[Collector] Progress: 140/232 nodes, 45 online
+[Collector] Progress: 150/232 nodes, 46 online
+[Collector] Progress: 160/232 nodes, 49 online
+[Collector] Progress: 170/232 nodes, 51 online
+[Collector] Progress: 180/232 nodes, 52 online
+[Collector] Progress: 190/232 nodes, 54 online
+[Collector] Progress: 200/232 nodes, 55 online
+[Collector] Progress: 210/232 nodes, 55 online
+[Collector] Progress: 220/232 nodes, 55 online
+[Collector] Progress: 230/232 nodes, 55 online
+[Collector] Progress: 232/232 nodes, 55 online
+[MongoDB] Saved snapshot for devnet2: 55/232 sampled online
+[MongoDB] Saved 55 node history records
+[Collector] devnet2: 232 total, 55 online, 177 offline (24% online)
+[Collector] Collecting data for mainnet1...
+[Collector] Failed to fetch pods from mainnet1: invalid json response body at https://rpc3.pchednode.com/rpc reason: Unexpected token '<', "<html>
+<h"... is not valid JSON
+[Collector] No pods data for mainnet1
+[Collector] Collecting data for mainnet2...
+[Collector] Failed to fetch pods from mainnet2: invalid json response body at https://rpc4.pchednode.com/rpc reason: Unexpected token '<', "<html>
+<h"... is not valid JSON
+[Collector] No pods data for mainnet2
+[Collector] Collection cycle completed in 367.91s

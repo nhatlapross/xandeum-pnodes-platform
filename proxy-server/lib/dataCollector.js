@@ -3,6 +3,19 @@ const fetch = require('node-fetch');
 const AbortController = require('abort-controller');
 const { saveNetworkSnapshot, saveNodeHistory } = require('./mongodb');
 
+// Telegram bot for alerts (lazy loaded to avoid circular dependency)
+let telegramBot = null;
+function getTelegramBot() {
+  if (!telegramBot) {
+    try {
+      telegramBot = require('./telegramBot');
+    } catch (e) {
+      // Bot not available
+    }
+  }
+  return telegramBot;
+}
+
 // Configuration from environment variables
 const COLLECTOR_BATCH_SIZE = parseInt(process.env.COLLECTOR_BATCH_SIZE, 10) || 10; // Nodes to process in parallel per batch
 
@@ -246,6 +259,12 @@ async function collectNetworkData(network) {
   // Save to MongoDB
   await saveNetworkSnapshot(network, aggregatedData);
   await saveNodeHistory(nodeStats.filter(n => n.status === 'online')); // Only save online nodes to history
+
+  // Check for node status changes and send Telegram alerts
+  const bot = getTelegramBot();
+  if (bot && bot.checkNodeAlerts) {
+    await bot.checkNodeAlerts(nodeStats);
+  }
 
   console.log(`[Collector] ${network}: ${totalPods} total, ${onlineNodes.length} online, ${offlineNodes.length} offline (${aggregatedData.onlineRatio}% online)`);
 
